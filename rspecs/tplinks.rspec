@@ -1,0 +1,71 @@
+<?xml version='1.0'?>
+<rspec xmlns="http://www.geni.net/resources/rspec/3" type="request" generated_by="jFed RSpec Editor" generated="2016-06-20T15:48:20.744+02:00" xmlns:emulab="http://www.protogeni.net/resources/rspec/ext/emulab/1" xmlns:jfedBonfire="http://jfed.iminds.be/rspec/ext/jfed-bonfire/1" xmlns:delay="http://www.protogeni.net/resources/rspec/ext/delay/1" xmlns:jfed-command="http://jfed.iminds.be/rspec/ext/jfed-command/1" xmlns:client="http://www.protogeni.net/resources/rspec/ext/client/1" xmlns:jfed-ssh-keys="http://jfed.iminds.be/rspec/ext/jfed-ssh-keys/1" xmlns:jfed="http://jfed.iminds.be/rspec/ext/jfed/1" xmlns:sharedvlan="http://www.protogeni.net/resources/rspec/ext/shared-vlan/1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.geni.net/resources/rspec/3 http://www.geni.net/resources/rspec/3/request.xsd ">
+  <node client_id="tplink01" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink01">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="381.0" y="58.5"/>
+  </node>
+  <node client_id="tplink04" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink04">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="376.0" y="148.5"/>
+  </node>
+  <node client_id="tplink05" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink05">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="382.0" y="203.5"/>
+  </node>
+  <node client_id="tplink07" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink07">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="379.0" y="299.5"/>
+  </node>
+  <node client_id="tplink10" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink10">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="402.0" y="432.5"/>
+  </node>
+  <node client_id="tplink11" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink11">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="401.0" y="478.5"/>
+  </node>
+  <node client_id="tplink19" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink19">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="506.0" y="54.5"/>
+  </node>
+  <node client_id="tplink20" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink20">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="521.0" y="110.5"/>
+  </node>
+  <node client_id="tplink06" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink06">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="382.0" y="253.5"/>
+  </node>
+  <node client_id="tplink08" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink08">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="378.0" y="336.5"/>
+  </node>
+  <node client_id="tplink03" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink03">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="383.0" y="103.5"/>
+  </node>
+  <node client_id="tplink22" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink22">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="542.0" y="176.5"/>
+  </node>
+  <node client_id="tplink23" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink23">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="543.0" y="224.5"/>
+  </node>
+  <node client_id="tplink09" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink09">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="381.0" y="378.5"/>
+  </node>
+  <node client_id="tplink12" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink12">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="403.0" y="516.5"/>
+  </node>
+  <node client_id="tplink13" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink13">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="402.0" y="564.5"/>
+  </node>
+  <node client_id="tplink15" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+tplink+tplink15">
+    <sliver_type name="raw-pc"/>
+    <location xmlns="http://jfed.iminds.be/rspec/ext/jfed/1" x="406.0" y="615.5"/>
+  </node>
+</rspec>

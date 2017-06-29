@@ -1,0 +1,9 @@
+network={
+    scan_ssid=1
+    ssid="{{ ssid }}"
+    key_mgmt=WPA-PSK
+    psk="{{ psk }}"
+    proto=RSN
+    pairwise=CCMP
+    group=CCMP
+}
