@@ -28,10 +28,9 @@ def interfaces_list():
 
 ap_settings = dict(
     hw_mode='a',
-    channel=52,
+    channel=40,
     interface='wlan1',
-    psk=''.join([
-        choice(ascii_letters + digits) for n in xrange(32)]),
+    psk='dUnZQFgqkYron1rKiLPGq4CVfToL9RuZ',
     ssid='twist-test',
     bssid=None,
 )
@@ -55,21 +54,42 @@ def create_ap(iface=None):
     # dev <devname> interface add <name> type <type>
     ap_settings['interface'] = iface
     fabfiles.upload_template('hostapd.conf.jn2',
-        '/tmp/hostapd-{}.conf'.format(iface),
+        '~/hostapd-{}.conf'.format(iface),
         context=ap_settings,
         template_dir='templates',
         use_jinja=True)
-    sudo(('hostapd -tB -P /tmp/hostapd-{0}.pid' +
+    sudo(('hostapd -tB -P /tmp/hostapd-{0}.pid'
         ' -f /tmp/hostapd-{0}.log'
-        ' /tmp/hostapd-{0}.conf').format(iface))
-    # TODO: configure IP
+        ' ~/hostapd-{0}.conf').format(iface))
+    sudo('ip addr add 10.100.1.1/24 dev {}'.format(iface))
+
+
+@task()
+def connect(iface=None):
+    with settings(warn_only=True, quiet=True):
+        myrun('pkill -eF /tmp/wpasup-{}.pid'.format(iface))
+
+    fabfiles.upload_template('wpasup.conf.jn2',
+        '~/wpasup.conf',
+        context=ap_settings,
+        template_dir='templates',
+        use_jinja=True)
+    sudo('wpa_supplicant '
+        + ' -c ~/wpasup.conf'
+        + ' -D nl80211'
+        + ' -i {}'.format(iface)
+        + ' -P /tmp/wpasup-{}.pid'.format(iface)
+        + ' -f /tmp/wpasup-{}.log'.format(iface)
+        + ' -B'
+         )
+    sudo('ip addr add 10.100.1.2/24 dev {}'.format(iface))
 
 
 @task()
 def scan():
     networks = []
     curr = None
-    for iface in interfaces():
+    for iface in interfaces_list():
         myrun('ip link set {} up'.format(iface))
         scan_result = myrun('iw dev {} scan'.format(iface))
 
@@ -129,6 +149,15 @@ def interfaces_create():
 
 
 @task()
+def clean():
+    with settings(warn_only=True, quiet=True):
+        myrun('pkill -e hostapd', out=True)
+        myrun('pkill -e wpa_supplicant', out=True)
+    sudo('modprobe -r ath9k')
+    sudo('modprobe ath9k')
+
+
+@task()
 def info(prefix='.'):
     host = env.host_string.split('@')[-1]
     phy_match = re.findall('Wiphy (\w*)',
@@ -150,11 +179,6 @@ def info(prefix='.'):
             f.write(udevadmall)
 
 
-@task()
-def connect():
-    # TODO: upload wpa_supplicant config template
-    # TODO: config IP
-    pass
 
 
 # iw phy0 interface add wlan0 type managed

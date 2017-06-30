@@ -44,7 +44,10 @@ def set_hosts(slice=None):
 
 @task()
 def packages():
-    sudo('apt install -yq wpasupplicant')
+    sudo('apt install -yq'
+        + ' wpasupplicant'
+        + ' tcpdump'
+         )
 
 
 @task()
