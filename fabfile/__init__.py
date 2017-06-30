@@ -1,9 +1,9 @@
 import time
 from fabric.api import *
 from fabric.exceptions import CommandTimeout
-import config  # noqa
-import wifi  # noqa
-from config import set_hosts  # noqa
+import fabfile.config as config # noqa
+import fabfile.wifi as wifi # noqa
+from fabfile.config import set_hosts  # noqa
 
 
 @task()
