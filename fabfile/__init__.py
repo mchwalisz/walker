@@ -10,6 +10,8 @@ from fabfile.config import set_hosts  # noqa
 def node_info():
     with settings(warn_only=True):
         run('cat /etc/twistprotected')
+        run('ip a')
+        run('iw dev')
 
 
 @task()
@@ -23,15 +25,3 @@ def run_iperf():
     elif env.hosts.index(env.host_string) == 1:
         time.sleep(1)
         run('iperf -i 1 -t  10 -c {}'.format(env.hosts[0]))
-
-
-def run():
-    pass
-    # reserve nodes
-    # get the full list of nodes
-    # for each pair
-        # first node as AP
-        # second node as client (connect)
-        # check connection
-        # iperf
-        # remove interfaces on both
