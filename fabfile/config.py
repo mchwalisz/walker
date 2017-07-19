@@ -6,16 +6,35 @@ import re
 
 
 @task()
-def status(slice='wifi-channel', wait=False):
+def status(slice='wifi-channel', wait=False, wait_for='geni_ready'):
     args = '-V3 -a twist'
     checkcmd = 'omni describe {args} {slice}'.format(
         args=args,
         slice=slice)
+    allocation_status = re.compile(
+        '\"geni_allocation_status\":\s*\"(?P<status>\w*?)\"')
+    operational_status = re.compile(
+        '\"geni_operational_status\":\s*\"(?P<status>\w*?)\"')
 
     check = local(checkcmd, capture=True)
+    print([m.group('status')
+        for m in allocation_status.finditer(check.stderr)])
+    print([m.group('status')
+        for m in operational_status.finditer(check.stderr)])
 
     if wait:
-        while check.stderr.find('geni_ready') == -1:
+        while not (
+                all(m.group('status') == wait_for
+                    for m in allocation_status.finditer(check.stderr))
+                or
+                all(m.group('status') == wait_for
+                    for m in operational_status.finditer(check.stderr))
+        ):
+            print([m.group('status')
+                for m in allocation_status.finditer(check.stderr)])
+            print([m.group('status')
+                for m in operational_status.finditer(check.stderr)])
+
             time.sleep(10)
             check = local(checkcmd, capture=True)
 
@@ -84,6 +103,7 @@ def reserve(rspec='nucs.rspec', slice='wifi-channel', duration=8):
     local('omni provision {args} {slice}'.format(
         args=args,
         slice=slice))
+    execute(status, wait=True, wait_for='geni_provisioned')
     local('omni performoperationalaction {args} {slice} geni_start'.format(
         args=args,
         slice=slice))
