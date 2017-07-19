@@ -1,12 +1,2 @@
 fabric3
 jinja2
-
-# for omni
-python-dateutil
-M2Crypto==0.23.0
-pyopenssl
-# sudo apt install libxmlsec1-dev libssl-dev
-# ln -s /usr/include/x86_64-linux-gnu/openssl/opensslconf.h /usr/include/openssl/opensslconf.h
-# sudo apt-get install python-m2crypto python-dateutil \
-#                     python-openssl libxmlsec1 xmlsec1 \
-#                     libxmlsec1-openssl libxmlsec1-dev
