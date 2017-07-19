@@ -57,7 +57,9 @@ def create_ap(iface=None):
         '~/hostapd-{}.conf'.format(iface),
         context=ap_settings,
         template_dir='templates',
-        use_jinja=True)
+        use_jinja=True,
+        backup=False
+    )
     sudo(('hostapd -tB -P /tmp/hostapd-{0}.pid'
         ' -f /tmp/hostapd-{0}.log'
         ' ~/hostapd-{0}.conf').format(iface))
@@ -91,7 +93,10 @@ def scan():
     curr = None
     for iface in interfaces_list():
         myrun('ip link set {} up'.format(iface))
-        scan_result = myrun('iw dev {} scan'.format(iface))
+        with settings(
+                hide('warnings', 'running', 'stdout', 'stderr'),
+                warn_only=True):
+            scan_result = myrun('iw dev {} scan'.format(iface))
 
         for line in scan_result.splitlines():
             line = line.strip()
