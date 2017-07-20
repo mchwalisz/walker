@@ -62,7 +62,8 @@ def set_hosts(slice=None):
 
 
 @task()
-def packages():
+@parallel()
+def install():
     sudo('apt install -yq'
         + ' wpasupplicant'
         + ' tcpdump'
@@ -84,7 +85,7 @@ def reserve(rspec='nucs.rspec', slice='wifi-channel', duration=8):
         slice=slice)
     with settings(warn_only=True):
         if local(checkcmd, capture=True).stderr.find('geni_ready') != -1:
-            print(green('Resources ready'))
+            print('Resources ready')
             return
 
     # Reserve and start
