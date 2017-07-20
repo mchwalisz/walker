@@ -1,3 +1,10 @@
 fabric3
 jinja2
 pandas
+
+# Analysis
+jupyter
+matplotlib
+seaborn
+networkx
+pydotplus
