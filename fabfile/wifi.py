@@ -26,65 +26,98 @@ def interfaces_list():
             yield line.split(' ')[-1]
 
 
-ap_settings = dict(
-    hw_mode='a',
-    channel=40,
-    interface='wlan1',
-    psk='dUnZQFgqkYron1rKiLPGq4CVfToL9RuZ',
-    ssid='twist-test',
-    bssid=None,
-)
-
-
 @task()
-def create_ap(iface=None):
-    'Creates Wi-Fi AP with hostapd'
-    if iface is None:
-        iface = ap_settings['interface']
-    # TODO: create interface
+def create_ap(
+        interface='wlan0',
+        phy=None,
+        ssid='twist-test',
+        channel=40,
+        hw_mode='a',
+        psk='dUnZQFgqkYron1rKiLPGq4CVfToL9RuZ',
+        bssid=None,
+        ip='10.100.1.1'):
+    """Task to create Wi-Fi AP with hostapd on a node.
 
-    if ap_settings['bssid'] is None:
+    Args:
+        interface (str): Wi-Fi interface
+        phy (str): Physical device. If not None it will force create new
+            interface on this device.
+        ssid (str): Network name
+        channel (int): Used channel
+        hw_mode (str): Hardware modes
+        psk (str): Password
+        bssid (str): Used BSSID, will be generated if None
+        ip (str): IP address of the AP
+    """
+    context = locals()
+    with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
+        if phy is not None:
+            myrun('ip dev {} del'.format(interface))
+            myrun('iw {} interface add {} type managed'.format(phy, interface))
+        else:
+            myrun('iw dev {} set type managed'.format(interface))
+        myrun('pkill -eF /tmp/hostapd-{}.pid'.format(interface))
+
+    if bssid is None:
         mac = re.search('ether ([0-9a-f:]{17})',
-            myrun('ip link show dev {}'.format(iface))).group(1)
-        ap_settings['bssid'] = '02:' + mac[3:]
+            myrun('ip link show dev {}'.format(interface))).group(1)
+        bssid = '02:' + mac[3:]
+        context['bssid'] = bssid
 
-    with settings(warn_only=True, quiet=True):
-        myrun('pkill -eF /tmp/hostapd-{}.pid'.format(iface))
-
-    # dev <devname> interface add <name> type <type>
-    ap_settings['interface'] = iface
     fabfiles.upload_template('hostapd.conf.jn2',
-        '~/hostapd-{}.conf'.format(iface),
-        context=ap_settings,
+        '~/hostapd-{}.conf'.format(interface),
+        context=context,
         template_dir='templates',
         use_jinja=True,
-        backup=False
-    )
+        backup=False)
+
     sudo(('hostapd -tB -P /tmp/hostapd-{0}.pid'
         ' -f /tmp/hostapd-{0}.log'
-        ' ~/hostapd-{0}.conf').format(iface))
-    sudo('ip addr add 10.100.1.1/24 dev {}'.format(iface))
+        ' ~/hostapd-{0}.conf').format(interface))
+    sudo('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
 @task()
-def connect(iface=None):
-    with settings(warn_only=True, quiet=True):
-        myrun('pkill -eF /tmp/wpasup-{}.pid'.format(iface))
+def connect(interface='wlan0',
+        phy=None,
+        ssid='twist-test',
+        psk='dUnZQFgqkYron1rKiLPGq4CVfToL9RuZ',
+        ip='10.100.1.2'):
+    """Task to connect a node to an AP.
+
+    Args:
+        interface (str): Wi-Fi interface
+        phy (str): Physical device. If not None it will force create new
+            interface on this device.
+        ssid (str): Network name
+        psk (str): Password
+        ip (str): IP address of the AP
+    """
+    context = locals()
+
+    with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
+        if phy is not None:
+            myrun('ip dev {} del'.format(interface))
+            myrun('iw {} interface add {} type managed'.format(phy, interface))
+        else:
+            myrun('iw dev {} set type managed'.format(interface))
+        myrun('pkill -eF /tmp/wpasup-{}.pid'.format(interface))
 
     fabfiles.upload_template('wpasup.conf.jn2',
         '~/wpasup.conf',
-        context=ap_settings,
+        context=context,
         template_dir='templates',
-        use_jinja=True)
+        use_jinja=True,
+        backup=False)
     sudo('wpa_supplicant '
         + ' -c ~/wpasup.conf'
         + ' -D nl80211'
-        + ' -i {}'.format(iface)
-        + ' -P /tmp/wpasup-{}.pid'.format(iface)
-        + ' -f /tmp/wpasup-{}.log'.format(iface)
+        + ' -i {}'.format(interface)
+        + ' -P /tmp/wpasup-{}.pid'.format(interface)
+        + ' -f /tmp/wpasup-{}.log'.format(interface)
         + ' -B'
          )
-    sudo('ip addr add 10.100.1.2/24 dev {}'.format(iface))
+    sudo('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
 @task()
