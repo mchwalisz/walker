@@ -31,7 +31,7 @@ def create_ap(
         interface='wlan0',
         phy=None,
         ssid='twist-test',
-        channel=40,
+        channel=48,
         hw_mode='a',
         psk='dUnZQFgqkYron1rKiLPGq4CVfToL9RuZ',
         bssid=None,
@@ -122,6 +122,8 @@ def connect(interface='wlan0',
 
 @task()
 def scan():
+    """Returns scan of networks
+    """
     networks = []
     curr = None
     for iface in interfaces_list():
@@ -165,6 +167,7 @@ def scan():
             net['node'],
             net['ssid'],
         ))
+    return networks
 
 
 @task()
@@ -215,8 +218,6 @@ def info(prefix='.'):
             f.write(lspci)
             f.write('\n\n# udevadm info -a\n')
             f.write(udevadmall)
-
-
 
 
 # iw phy0 interface add wlan0 type managed
