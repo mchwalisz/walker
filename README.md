@@ -6,7 +6,7 @@ Based on work from Sascha Rösler but switched to `fabric`.
 ### Useful commands
 
 ```bash
-fab config.reserve config.install
+fab config.reserve set_hosts config.install
 
 fab set_hosts full_scan
 

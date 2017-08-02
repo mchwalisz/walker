@@ -18,12 +18,21 @@ def myrun(cmd, out=False):
             return sudo(cmd)
 
 
-def interfaces_list():
+def get_interfaces():
     devices = myrun('iw dev')
     for line in devices.split('\n'):
         line = line.strip()
         if line.startswith('Interface'):
             yield line.split(' ')[-1]
+
+
+@task()
+def get_devices():
+    phy_list = myrun('iw phy')
+    phys = [phy.group('phy')
+        for phy in re.finditer(r'Wiphy\s(?P<phy>\S*)', phy_list.stdout)]
+    # phys.append(myrun('hostname'))
+    return phys
 
 
 @task()
@@ -126,7 +135,7 @@ def scan():
     """
     networks = []
     curr = None
-    for iface in interfaces_list():
+    for iface in get_interfaces():
         myrun('ip link set {} up'.format(iface))
         with settings(
                 hide('warnings', 'running', 'stdout', 'stderr'),
@@ -175,7 +184,7 @@ def interfaces_create():
     with settings(warn_only=True, quiet=True):
         myrun('pkill -e hostapd', out=True)
         myrun('pkill -e wpa_supplicant', out=True)
-    for iface in interfaces_list():
+    for iface in get_interfaces():
         myrun('iw dev {} del'.format(iface), out=True)
     phy_match = re.findall('Wiphy (\w*)',
         myrun('iw phy'),

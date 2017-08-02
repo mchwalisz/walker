@@ -1,5 +1,6 @@
 import time
 from itertools import permutations
+from itertools import product
 from fabric.api import *
 from fabric.exceptions import CommandTimeout
 from fabric.decorators import runs_once
@@ -35,9 +36,14 @@ def run_iperf():
 def full_scan():
     with settings(parallel=True):
         execute(wifi.interfaces_create)
+        phys = execute(wifi.get_devices)
     data = pd.DataFrame()
     for server in env.hosts:
-        for channel, mode in zip([1, 48], ['g', 'a']):
+        for phy, (channel, mode) in product(
+                phys[server],
+                zip([1, 48], ['g', 'a'])):
+            print('############## {}, {}, {}, {}'.format(
+                server, phy, channel, mode))
             # Setup
             execute(wifi.create_ap,
                 channel=channel,
@@ -54,3 +60,10 @@ def full_scan():
             execute(wifi.interfaces_create, hosts=[server])
     data.to_csv('data/scan.csv')
     print(data)
+
+
+@task()
+def check_reg():
+    for reg in ['00', 'DE', 'US', 'EU']:
+        sudo(f'iw reg set {reg}')
+        run('iw phy |grep -e " MHz " -e "Wiphy" | grep -v -e "IR" -e "disabled"')

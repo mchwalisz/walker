@@ -67,7 +67,11 @@ def install():
     sudo('apt install -yq'
         + ' wpasupplicant'
         + ' tcpdump'
+        + ' python-setuptools'
+        + ' python-pip'
          )
+    sudo('pip install pyric')
+    sudo('iw reg set DE')
 
 
 @task()
