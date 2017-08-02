@@ -108,7 +108,7 @@ def reserve(rspec='nucs.rspec', slice='wifi-channel', duration=8):
     local('omni provision {args} {slice}'.format(
         args=args,
         slice=slice))
-    execute(status, wait=True, wait_for='geni_provisioned')
+    execute(status, wait=True, wait_for='geni_notready')
     local('omni performoperationalaction {args} {slice} geni_start'.format(
         args=args,
         slice=slice))
