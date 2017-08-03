@@ -3,62 +3,68 @@ import datetime as dt
 import fabric
 from fabric.api import *
 import re
+import json
+from pprint import pprint
 
 
 @task()
 def status(slice='wifi-channel', wait_for=None):
+    """Gets slice status
+
+    Args:
+        slice: slice name to check
+        wait_for: this value be True on all nodes `geni_operational_status`
+
+    Returns: node info as dict
+    """
+
+    def parse_status(output):
+        re_nodes = re.compile(
+            r'client_id=\\\"(?P<name>\w*).*?sliver_id=\\\"(?P<sliver>.*?)\\\"')
+        re_slivers = re.compile(
+            r'\"geni_slivers\":\s(?P<json>\[.*?\])', re.MULTILINE | re.DOTALL)
+        slivers = {node.group('sliver'): node.group('name')
+            for node in re_nodes.finditer(output)}
+        slivers_status = json.loads(re_slivers.search(output).group('json'))
+        nodes = {}
+        for sliver in slivers_status:
+            urn = sliver['geni_sliver_urn']
+            name = slivers[urn]
+            if name.startswith('tplink'):
+                name = 'root@' + name
+            nodes[name] = sliver
+        return nodes
+
     args = '-V3 -a twist'
     checkcmd = 'omni describe {args} {slice}'.format(
         args=args,
         slice=slice)
-    allocation_status = re.compile(
-        '\"geni_allocation_status\":\s*\"(?P<status>\w*?)\"')
-    operational_status = re.compile(
-        '\"geni_operational_status\":\s*\"(?P<status>\w*?)\"')
-
     check = local(checkcmd, capture=True)
-    print([m.group('status')
-        for m in allocation_status.finditer(check.stderr)])
-    print([m.group('status')
-        for m in operational_status.finditer(check.stderr)])
-
+    nodes = parse_status(check.stderr)
     if wait_for:
-        while not (
-                all(m.group('status') == wait_for
-                    for m in allocation_status.finditer(check.stderr))
-                or
-                all(m.group('status') == wait_for
-                    for m in operational_status.finditer(check.stderr))
-        ):
-            print([m.group('status')
-                for m in allocation_status.finditer(check.stderr)])
-            print([m.group('status')
-                for m in operational_status.finditer(check.stderr)])
-
+        while not all(node['geni_operational_status'] == wait_for
+                    for node in nodes.values()):
+            for host in nodes:
+                print("{}: {}".format(
+                    host, nodes[host]['geni_operational_status']))
             time.sleep(10)
             check = local(checkcmd, capture=True)
-
-    regex = r'component_id=\\\"(?P<urn>.*?)\\\"'
-    matches = re.finditer(regex, check.stderr, re.MULTILINE)
-    hosts = [x.group('urn').split('+')[-1] for x in matches]
-    hosts = ['root@' + x if x.startswith('tplink') else x for x in hosts]
-    return hosts
+            nodes = parse_status(check.stderr)
+    else:
+        pprint(nodes)
+    return nodes
 
 
 @task(default=True)
-def set_hosts(slice=None):
-    if slice is not None:
-        hosts = status(slice=slice, wait_for='geni_ready')
-    else:
-        hosts = status(wait_for='geni_ready')
-    print(hosts)
-    with settings(host_string=hosts[0]):
+def set_hosts(slice='wifi-channel'):
+    nodes = status(slice=slice, wait_for='geni_ready')
+    hosts = list(nodes.keys())
+    with settings(host_string=hosts[0]), hide('output', 'running'):
         try:
             run('ls')
         except fabric.exceptions.NetworkError:
             env.gateway = 'proxyuser@api.twist.tu-berlin.de:2222'
     env.hosts = hosts
-    env.shell = '/bin/sh -c'
 
 
 @task()
