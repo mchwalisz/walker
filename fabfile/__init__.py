@@ -9,7 +9,7 @@ import pandas as pd
 import fabfile.config as config # noqa
 import fabfile.wifi as wifi # noqa
 from fabfile.config import set_hosts  # noqa
-from tqdm import tqdm
+import tqdm
 
 
 @task()
@@ -41,27 +41,30 @@ def full_scan():
     execute(wifi.ifaces_create, types_=('managed',))
     data = pd.DataFrame()
     ssid = 'twist-test'
-    bar = tqdm(desc='scanners')
-    for server in tqdm(env.hosts, desc='APs'):
+    t_ap = tqdm.tqdm_gui(desc='AP',
+        total=sum(map(lambda h: len(phys[h]), phys)) * 2)
+    for server in env.hosts:
         for phy, (channel, mode) in product(
                 phys[server],
                 zip([1, 48], ['g', 'a'])):
-            print('############## {}, {}, {}, {}'.format(
-                server, phy, channel, mode))
+            t_ap.set_description('AP {}'.format(server))
+            t_ap.set_postfix(phy=phy, channel=channel)
+            t_ap.update(1)
             # Setup
             try:
                 execute(wifi.create_ap,
                     channel=channel,
                     hw_mode=mode,
                     ssid=ssid,
+                    phy=phy,
                     hosts=[server])
             except wifi.FabricRunException:
                 print("Cannot setup AP")
                 continue
             # Experiment
-            scan = execute(wifi.scan,
-                hosts=[x for x in env.hosts if x != server],
-                tqdm_=bar)
+            with settings(parallel=True, pool_size=10):
+                scan = execute(wifi.scan,
+                    hosts=[x for x in env.hosts if x != server])
             for scanner in scan:
                 s = pd.DataFrame.from_dict(scan[scanner], orient='columns')
                 if s.empty:
