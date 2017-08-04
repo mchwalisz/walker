@@ -152,12 +152,12 @@ def scan():
                 r'BSS (?P<bssid>([0-9a-f]{2}:?){6})\(on (?P<dev>\w*)\)',
                 line)
             if match:
-                if curr is not None:
+                if (curr is not None) and ('ssid' in curr):
                     networks.append(curr)
                 curr = dict(
                     bssid=match.group('bssid'),
-                    dev=match.group('dev'),
-                    node=env.host_string.split('@')[-1])
+                    sta_dev=match.group('dev'),
+                    sta=env.host_string.split('@')[-1])
             sgr = [
                 ('freq', r'freq: (\d*)'),
                 ('signal', r'signal: (.*)'),
@@ -170,15 +170,15 @@ def scan():
 
     networks = sorted(networks, key=lambda k: k['ssid'])
     scheme = '{:<17} {:<8} {:<5} {:<12} {:<10} {}'
-    print(scheme.format('BSSID', 'dev', 'freq', 'signal', 'node', 'ssid'))
+    print(scheme.format('BSSID', 'dev', 'freq', 'signal', 'sta', 'ssid'))
     for net in networks:
         print(scheme.format(
             net['bssid'],
-            net['dev'],
+            net['sta_dev'],
             net['freq'],
             net['signal'],
-            net['node'],
-            net['ssid'],
+            net['sta'],
+            str(net['ssid']),
         ))
     return networks
 

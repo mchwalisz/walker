@@ -63,6 +63,8 @@ def full_scan():
                 s = pd.DataFrame.from_dict(scan[scanner], orient='columns')
                 if s.empty:
                     continue
+                s.ix[s.ssid == ssid, 'ap'] = server
+                s.ix[s.ssid == ssid, 'ap_dev'] = phy
                 data = data.append(s, ignore_index=True)
             # Tear down
             execute(wifi.interfaces_create, hosts=[server])
