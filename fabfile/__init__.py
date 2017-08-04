@@ -1,4 +1,5 @@
 import time
+from datetime import datetime
 from itertools import permutations
 from itertools import product
 from fabric.api import *
@@ -58,7 +59,7 @@ def full_scan():
                 data = data.append(s, ignore_index=True)
             # Tear down
             execute(wifi.interfaces_create, hosts=[server])
-    data.to_csv('data/scan.csv')
+    data.to_csv('data/scan_{}.csv'.format(datetime.now().isoformat()))
     print(data)
 
 
