@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from itertools import permutations
+# from itertools import permutations
 from itertools import product
 from fabric.api import *
 from fabric.exceptions import CommandTimeout
