@@ -9,6 +9,7 @@ import pandas as pd
 import fabfile.config as config # noqa
 import fabfile.wifi as wifi # noqa
 from fabfile.config import set_hosts  # noqa
+from tqdm import tqdm_gui
 
 
 @task()
@@ -40,6 +41,7 @@ def full_scan():
         phys = execute(wifi.get_devices)
     data = pd.DataFrame()
     ssid = 'twist-test'
+    bar = tqdm_gui()
     for server in env.hosts:
         for phy, (channel, mode) in product(
                 phys[server],
@@ -58,7 +60,8 @@ def full_scan():
                 continue
             # Experiment
             scan = execute(wifi.scan,
-                hosts=[x for x in env.hosts if x != server])
+                hosts=[x for x in env.hosts if x != server],
+                tqdm_=bar)
             for scanner in scan:
                 s = pd.DataFrame.from_dict(scan[scanner], orient='columns')
                 if s.empty:

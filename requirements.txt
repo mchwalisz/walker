@@ -1,6 +1,7 @@
 fabric3
 jinja2
 pandas
+tqdm
 
 # Analysis
 jupyter

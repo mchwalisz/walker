@@ -134,7 +134,7 @@ def connect(interface='wlan0',
 
 
 @task()
-def scan():
+def scan(tqdm_=None):
     """Returns scan of networks
     """
     networks = []
@@ -180,6 +180,8 @@ def scan():
             net['sta'],
             str(net['ssid']),
         ))
+    if tqdm_ is not None:
+        tqdm_.update(1)
     return networks
 
 
