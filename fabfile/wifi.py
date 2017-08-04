@@ -188,6 +188,9 @@ def scan(tqdm_=None):
                 if match:
                     curr[name] = match.group(1)
 
+        if tqdm_ is not None:
+            tqdm_.update(1)
+
     networks = sorted(networks, key=lambda k: k['ssid'])
     scheme = '{:<17} {:<8} {:<5} {:<12} {:<10} {}'
     print(scheme.format('BSSID', 'dev', 'freq', 'signal', 'sta', 'ssid'))
@@ -200,8 +203,6 @@ def scan(tqdm_=None):
             net['sta'],
             str(net['ssid']),
         ))
-    if tqdm_ is not None:
-        tqdm_.update(1)
     return networks
 
 
