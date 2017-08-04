@@ -69,7 +69,7 @@ def phys_get():
 
 @task()
 def create_ap(
-        interface='wlan0',
+        interface=None,
         phy=None,
         ssid='twist-test',
         channel=48,
@@ -91,6 +91,11 @@ def create_ap(
         ip (str): IP address of the AP
     """
     context = locals()
+    if interface is None and phy is None:
+        raise AttributeError('One of interface or phy must be provided')
+    if interface is None:
+        interface = 'w' + phy
+        context['interface'] = interface
     with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
         if phy is not None:
             sudo_('ip dev {} del'.format(interface))
