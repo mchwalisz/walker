@@ -5,6 +5,10 @@ from fabric.api import *
 import fabric.contrib.files as fabfiles
 
 
+class FabricRunException(Exception):
+    pass
+
+
 def sudo_(cmd, out=False):
     if out:
         args = tuple()
@@ -80,9 +84,10 @@ def create_ap(
         use_jinja=True,
         backup=False)
 
-    sudo(('hostapd -tB -P /tmp/hostapd-{0}.pid'
-        ' -f /tmp/hostapd-{0}.log'
-        ' ~/hostapd-{0}.conf').format(interface))
+    with settings(abort_exception=FabricRunException):
+        sudo_(('hostapd -tB -P /tmp/hostapd-{0}.pid'
+            ' -f /tmp/hostapd-{0}.log'
+            ' ~/hostapd-{0}.conf').format(interface))
     sudo_('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
