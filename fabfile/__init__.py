@@ -34,8 +34,8 @@ def run_iperf():
 @task()
 @runs_once
 def full_scan():
+    execute(wifi.interfaces_create)
     with settings(parallel=True):
-        execute(wifi.interfaces_create)
         phys = execute(wifi.get_devices)
     data = pd.DataFrame()
     for server in env.hosts:

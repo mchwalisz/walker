@@ -184,6 +184,7 @@ def scan():
 
 
 @task()
+@parallel()
 def interfaces_create():
     with settings(warn_only=True, quiet=True):
         sudo_('pkill hostapd', out=True)
