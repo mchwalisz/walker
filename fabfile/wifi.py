@@ -129,8 +129,7 @@ def connect(interface='wlan0',
         + ' -i {}'.format(interface)
         + ' -P /tmp/wpasup-{}.pid'.format(interface)
         + ' -f /tmp/wpasup-{}.log'.format(interface)
-        + ' -B'
-         )
+        + ' -B')
     sudo_('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
@@ -204,7 +203,9 @@ def interfaces_create():
 
 
 @task()
+@parallel()
 def clean():
+    'Makes sure hostapd and wpa_supplicant are killed and ath9k module reloaded'
     with settings(warn_only=True, quiet=True):
         sudo_('pkill hostapd', out=True)
         sudo_('pkill wpa_supplicant', out=True)
@@ -214,6 +215,7 @@ def clean():
 
 @task()
 def info(prefix='.'):
+    'Gather node info to files'
     host = env.host_string.split('@')[-1]
     phy_match = re.findall('Wiphy (\w*)',
         sudo_('iw phy'))
