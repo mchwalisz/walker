@@ -70,14 +70,35 @@ def set_hosts(slice='wifi-channel'):
 @task()
 @parallel()
 def install():
+    if 'tplink' in env.host_string:
+        install_openwrt()
+        return
     sudo('apt install -yq'
         + ' wpasupplicant'
         + ' tcpdump'
         + ' python-setuptools'
         + ' python-pip'
+        + ' iperf'
          )
     sudo('pip install pyric')
     sudo('iw reg set DE')
+
+
+@task()
+@parallel()
+def install_openwrt():
+    with settings(shell='/bin/sh -c'):
+        run('opkg update')
+        run('opkg install '
+            + ' tcpdump'
+            + ' python-setuptools'
+            + ' python-pip'
+            + ' iperf'
+            + ' openssh-sftp-server'
+            + ' procps-pkill'
+            )
+        run('pip install pyric')
+        run('iw reg set DE')
 
 
 @task()
