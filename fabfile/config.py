@@ -54,17 +54,20 @@ def status(slice='wifi-channel', wait_for=None):
 
 
 @task(default=True)
+@hosts('localhost')
 def set_hosts(slice='wifi-channel'):
     nodes = status(slice=slice, wait_for='geni_ready')
     hosts = list(nodes.keys())
     hosts = ['root@' + name if name.startswith('tplink') else name
         for name in hosts]
-    with settings(host_string=hosts[0]), hide('output', 'running'):
+    with settings(
+            host_string=hosts[0],
+            shell='/bin/sh -c'), hide('output', 'running'):
         try:
             run('ls')
         except fabric.exceptions.NetworkError:
             env.gateway = 'proxyuser@api.twist.tu-berlin.de:2222'
-    env.hosts = hosts
+    env.hosts.extend(hosts)
 
 
 @task()
