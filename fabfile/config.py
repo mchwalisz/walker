@@ -158,3 +158,18 @@ def release(slice='wifi-channel'):
 def remote():
     'Set config for remote work'
     env.gateway = 'proxyuser@api.twist.tu-berlin.de:2222'
+
+
+@task()
+@runs_once
+def restart(slice='wifi-channel'):
+    args = '-V3 -a twist'
+    nodes = execute(status)
+    for host in env.hosts:
+        host = host.replace('root@', '')
+        local(('omni performoperationalaction {args}'
+            + ' -u {urn} {slice} geni_restart').format(
+            args=args,
+            slice=slice,
+            urn=nodes[host]['geni_sliver_urn']))
+    execute(status, wait_for='geni_ready')
