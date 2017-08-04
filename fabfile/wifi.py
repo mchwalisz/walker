@@ -1,5 +1,6 @@
 import re
 from random import choice
+from itertools import product
 from string import ascii_letters, digits
 from fabric.api import *
 import fabric.contrib.files as fabfiles
@@ -13,7 +14,7 @@ def sudo_(cmd, out=False):
     if out:
         args = tuple()
     else:
-        args = ('output', 'running')
+        args = ('warnings', 'stdout', 'stderr')
     with hide(*args):
         if 'tplink' in env.host_string:
             with settings(shell='/bin/sh -c'):
@@ -22,7 +23,27 @@ def sudo_(cmd, out=False):
             return sudo(cmd)
 
 
-def get_interfaces():
+@task()
+@parallel()
+def ifaces_create(types_=('managed')):
+    phy_match = re.finditer('Wiphy (\S*)',
+        sudo_('iw phy'))
+    for phy, type_ in product(phy_match, types_):
+        sudo_(('iw phy {} interface ' +
+            'add {} type {}').format(phy, 'wlan' + phy[-1], type_))
+
+
+@task()
+@parallel()
+def ifaces_clean():
+    with settings(warn_only=True):
+        sudo_('pkill hostapd')
+        sudo_('pkill wpa_supplicant')
+    for iface in ifaces_get():
+        sudo_('iw dev {} del'.format(iface))
+
+
+def ifaces_get():
     devices = sudo_('iw dev')
     for line in devices.split('\n'):
         line = line.strip()
@@ -31,7 +52,8 @@ def get_interfaces():
 
 
 @task()
-def get_devices():
+@parallel()
+def phys_get():
     phy_list = sudo_('iw phy')
     phys = [phy.group('phy')
         for phy in re.finditer(r'Wiphy\s(?P<phy>\S*)', phy_list.stdout)]
@@ -139,11 +161,9 @@ def scan(tqdm_=None):
     """
     networks = []
     curr = None
-    for iface in get_interfaces():
+    for iface in ifaces_get():
         sudo_('ip link set {} up'.format(iface))
-        with settings(
-                hide('warnings', 'running', 'stdout', 'stderr'),
-                warn_only=True):
+        with settings(warn_only=True):
             scan_result = sudo_('iw dev {} scan'.format(iface))
 
         for line in scan_result.splitlines():
@@ -183,26 +203,6 @@ def scan(tqdm_=None):
     if tqdm_ is not None:
         tqdm_.update(1)
     return networks
-
-
-@task()
-@parallel()
-def interfaces_create():
-    with settings(warn_only=True, quiet=True):
-        sudo_('pkill hostapd', out=True)
-        sudo_('pkill wpa_supplicant', out=True)
-    for iface in get_interfaces():
-        sudo_('iw dev {} del'.format(iface), out=True)
-    phy_match = re.findall('Wiphy (\w*)',
-        sudo_('iw phy'),
-        re.MULTILINE)
-    for phy in phy_match:
-        sudo_(('iw phy {} interface ' +
-            'add {} type managed').format(phy, 'wlan' + phy[-1]),
-            out=True)
-        sudo_(('iw phy {} interface ' +
-            'add {} type monitor').format(phy, 'mon' + phy[-1]),
-            out=True)
 
 
 @task()
