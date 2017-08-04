@@ -161,6 +161,16 @@ def remote():
 
 
 @task()
+@parallel()
+def sanity_check():
+    with settings(
+            hide('warnings', 'stderr'),
+            shell='/bin/sh -c',
+            warn_only=True):
+        run('cat /etc/twistprotected')
+
+
+@task()
 @runs_once
 def restart(slice='wifi-channel'):
     args = '-V3 -a twist'
