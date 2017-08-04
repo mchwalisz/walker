@@ -76,4 +76,6 @@ def full_scan():
 def check_reg():
     for reg in ['00', 'DE', 'US', 'EU']:
         sudo(f'iw reg set {reg}')
-        run('iw phy |grep -e " MHz " -e "Wiphy" | grep -v -e "IR" -e "disabled"')
+        run('iw phy'
+            + ' | grep -e " MHz " -e "Wiphy"'
+            + ' | grep -v -e "IR" -e "disabled"')
