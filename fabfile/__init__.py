@@ -38,7 +38,7 @@ def run_iperf():
 def full_scan():
     execute(wifi.ifaces_clean)
     phys = execute(wifi.phys_get)
-    execute(wifi.ifaces_create, types_=('managed'))
+    execute(wifi.ifaces_create, types_=('managed',))
     data = pd.DataFrame()
     ssid = 'twist-test'
     bar = tqdm(desc='scanners')
@@ -71,7 +71,7 @@ def full_scan():
                 data = data.append(s, ignore_index=True)
             # Tear down
             execute(wifi.ifaces_clean, hosts=[server])
-            execute(wifi.ifaces_create, types_=('managed'), hosts=[server])
+            execute(wifi.ifaces_create, types_=('managed',), hosts=[server])
     data.to_csv('data/scan_{}.csv'.format(datetime.now().isoformat()))
     print(data)
 

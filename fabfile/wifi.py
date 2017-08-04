@@ -25,12 +25,18 @@ def sudo_(cmd, out=False):
 
 @task()
 @parallel()
-def ifaces_create(types_=('managed')):
-    phy_match = re.finditer('Wiphy (\S*)',
-        sudo_('iw phy'))
+def ifaces_create(types_=('managed',)):
+    phy_match = re.findall('Wiphy (\S*)',
+        sudo_('iw phy'),
+        re.MULTILINE)
+    name_prefix = {
+        'managed': 'w',
+        'ibss': 'i', 'monitor': 'i',
+        'mesh': 's',
+        'wds': 'd'}
     for phy, type_ in product(phy_match, types_):
         sudo_(('iw phy {} interface ' +
-            'add {} type {}').format(phy, 'wlan' + phy[-1], type_))
+            'add {} type {}').format(phy, name_prefix[type_] + phy[-1], type_))
 
 
 @task()
