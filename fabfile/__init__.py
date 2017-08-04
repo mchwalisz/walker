@@ -61,7 +61,8 @@ def full_scan():
                 hosts=[x for x in env.hosts if x != server])
             for scanner in scan:
                 s = pd.DataFrame.from_dict(scan[scanner], orient='columns')
-                s['ap'] = server
+                if s.empty:
+                    continue
                 data = data.append(s, ignore_index=True)
             # Tear down
             execute(wifi.interfaces_create, hosts=[server])
