@@ -208,7 +208,9 @@ def interfaces_create():
 @task()
 @parallel()
 def clean():
-    'Makes sure hostapd and wpa_supplicant are killed and ath9k module reloaded'
+    """Makes sure hostapd and wpa_supplicant are killed and ath9k module
+    reloaded
+    """
     with settings(warn_only=True, quiet=True):
         sudo_('pkill hostapd', out=True)
         sudo_('pkill wpa_supplicant', out=True)
@@ -237,10 +239,3 @@ def info(prefix='.'):
             f.write(lspci)
             f.write('\n\n# udevadm info -a\n')
             f.write(udevadmall)
-
-
-# iw phy0 interface add wlan0 type managed
-# iw phy1 interface add wlan1 type managed
-#
-# ip link set wlan0 up
-# ip link set wlan1 up
