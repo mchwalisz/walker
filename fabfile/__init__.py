@@ -39,6 +39,7 @@ def full_scan():
     with settings(parallel=True):
         phys = execute(wifi.get_devices)
     data = pd.DataFrame()
+    ssid = 'twist-test'
     for server in env.hosts:
         for phy, (channel, mode) in product(
                 phys[server],
@@ -46,10 +47,15 @@ def full_scan():
             print('############## {}, {}, {}, {}'.format(
                 server, phy, channel, mode))
             # Setup
-            execute(wifi.create_ap,
-                channel=channel,
-                hw_mode=mode,
-                hosts=[server])
+            try:
+                execute(wifi.create_ap,
+                    channel=channel,
+                    hw_mode=mode,
+                    ssid=ssid,
+                    hosts=[server])
+            except wifi.FabricRunException:
+                print("Cannot setup AP")
+                continue
             # Experiment
             scan = execute(wifi.scan,
                 hosts=[x for x in env.hosts if x != server])
