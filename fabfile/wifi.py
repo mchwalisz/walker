@@ -5,7 +5,7 @@ from fabric.api import *
 import fabric.contrib.files as fabfiles
 
 
-def myrun(cmd, out=False):
+def sudo_(cmd, out=False):
     if out:
         args = tuple()
     else:
@@ -19,7 +19,7 @@ def myrun(cmd, out=False):
 
 
 def get_interfaces():
-    devices = myrun('iw dev')
+    devices = sudo_('iw dev')
     for line in devices.split('\n'):
         line = line.strip()
         if line.startswith('Interface'):
@@ -28,10 +28,10 @@ def get_interfaces():
 
 @task()
 def get_devices():
-    phy_list = myrun('iw phy')
+    phy_list = sudo_('iw phy')
     phys = [phy.group('phy')
         for phy in re.finditer(r'Wiphy\s(?P<phy>\S*)', phy_list.stdout)]
-    # phys.append(myrun('hostname'))
+    # phys.append(sudo_('hostname'))
     return phys
 
 
@@ -61,15 +61,15 @@ def create_ap(
     context = locals()
     with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
         if phy is not None:
-            myrun('ip dev {} del'.format(interface))
-            myrun('iw {} interface add {} type managed'.format(phy, interface))
+            sudo_('ip dev {} del'.format(interface))
+            sudo_('iw {} interface add {} type managed'.format(phy, interface))
         else:
-            myrun('iw dev {} set type managed'.format(interface))
-        myrun('pkill -eF /tmp/hostapd-{}.pid'.format(interface))
+            sudo_('iw dev {} set type managed'.format(interface))
+        sudo_('pkill /tmp/hostapd-{}.pid'.format(interface))
 
     if bssid is None:
         mac = re.search('ether ([0-9a-f:]{17})',
-            myrun('ip link show dev {}'.format(interface))).group(1)
+            sudo_('ip link show dev {}'.format(interface))).group(1)
         bssid = '02:' + mac[3:]
         context['bssid'] = bssid
 
@@ -83,7 +83,7 @@ def create_ap(
     sudo(('hostapd -tB -P /tmp/hostapd-{0}.pid'
         ' -f /tmp/hostapd-{0}.log'
         ' ~/hostapd-{0}.conf').format(interface))
-    sudo('ip addr add {}/24 dev {}'.format(ip, interface))
+    sudo_('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
 @task()
@@ -106,11 +106,11 @@ def connect(interface='wlan0',
 
     with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
         if phy is not None:
-            myrun('ip dev {} del'.format(interface))
-            myrun('iw {} interface add {} type managed'.format(phy, interface))
+            sudo_('ip dev {} del'.format(interface))
+            sudo_('iw {} interface add {} type managed'.format(phy, interface))
         else:
-            myrun('iw dev {} set type managed'.format(interface))
-        myrun('pkill -eF /tmp/wpasup-{}.pid'.format(interface))
+            sudo_('iw dev {} set type managed'.format(interface))
+        sudo_('pkill /tmp/wpasup-{}.pid'.format(interface))
 
     fabfiles.upload_template('wpasup.conf.jn2',
         '~/wpasup.conf',
@@ -118,7 +118,7 @@ def connect(interface='wlan0',
         template_dir='templates',
         use_jinja=True,
         backup=False)
-    sudo('wpa_supplicant '
+    sudo_('wpa_supplicant '
         + ' -c ~/wpasup.conf'
         + ' -D nl80211'
         + ' -i {}'.format(interface)
@@ -126,7 +126,7 @@ def connect(interface='wlan0',
         + ' -f /tmp/wpasup-{}.log'.format(interface)
         + ' -B'
          )
-    sudo('ip addr add {}/24 dev {}'.format(ip, interface))
+    sudo_('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
 @task()
@@ -136,11 +136,11 @@ def scan():
     networks = []
     curr = None
     for iface in get_interfaces():
-        myrun('ip link set {} up'.format(iface))
+        sudo_('ip link set {} up'.format(iface))
         with settings(
                 hide('warnings', 'running', 'stdout', 'stderr'),
                 warn_only=True):
-            scan_result = myrun('iw dev {} scan'.format(iface))
+            scan_result = sudo_('iw dev {} scan'.format(iface))
 
         for line in scan_result.splitlines():
             line = line.strip()
@@ -182,18 +182,18 @@ def scan():
 @task()
 def interfaces_create():
     with settings(warn_only=True, quiet=True):
-        myrun('pkill -e hostapd', out=True)
-        myrun('pkill -e wpa_supplicant', out=True)
+        sudo_('pkill hostapd', out=True)
+        sudo_('pkill wpa_supplicant', out=True)
     for iface in get_interfaces():
-        myrun('iw dev {} del'.format(iface), out=True)
+        sudo_('iw dev {} del'.format(iface), out=True)
     phy_match = re.findall('Wiphy (\w*)',
-        myrun('iw phy'),
+        sudo_('iw phy'),
         re.MULTILINE)
     for phy in phy_match:
-        myrun(('iw phy {} interface ' +
+        sudo_(('iw phy {} interface ' +
             'add {} type managed').format(phy, 'wlan' + phy[-1]),
             out=True)
-        myrun(('iw phy {} interface ' +
+        sudo_(('iw phy {} interface ' +
             'add {} type monitor').format(phy, 'mon' + phy[-1]),
             out=True)
 
@@ -201,23 +201,23 @@ def interfaces_create():
 @task()
 def clean():
     with settings(warn_only=True, quiet=True):
-        myrun('pkill -e hostapd', out=True)
-        myrun('pkill -e wpa_supplicant', out=True)
-    sudo('modprobe -r ath9k')
-    sudo('modprobe ath9k')
+        sudo_('pkill hostapd', out=True)
+        sudo_('pkill wpa_supplicant', out=True)
+    sudo_('modprobe -r ath9k')
+    sudo_('modprobe ath9k')
 
 
 @task()
 def info(prefix='.'):
     host = env.host_string.split('@')[-1]
     phy_match = re.findall('Wiphy (\w*)',
-        myrun('iw phy'))
+        sudo_('iw phy'))
     for phy in phy_match:
-        phy_info = myrun('iw phy {} info'.format(phy))
-        udevadm = myrun('udevadm info /sys/class/ieee80211/{}'.format(phy))
+        phy_info = sudo_('iw phy {} info'.format(phy))
+        udevadm = sudo_('udevadm info /sys/class/ieee80211/{}'.format(phy))
         pci = re.search(r'^P:.*?(\d{4}:\d{2}:\d{2}.\d)', udevadm).group(1)
-        lspci = myrun('lspci -vvnnD -s {}'.format(pci))
-        udevadmall = myrun(
+        lspci = sudo_('lspci -vvnnD -s {}'.format(pci))
+        udevadmall = sudo_(
             'udevadm info -a /sys/class/ieee80211/{}'.format(phy))
         with open('{}/{}-{}.info'.format(
                 prefix, host, phy), 'w') as f:
