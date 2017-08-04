@@ -5,7 +5,7 @@ logger_stdout=-1
 logger_stdout_level=0
 country_code=DE
 ieee80211d=1
-ieee80211h=1
+{# ieee80211h=1 #}
 hw_mode={{ hw_mode }}
 channel={{ channel }}
 
