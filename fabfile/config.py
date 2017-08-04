@@ -42,7 +42,7 @@ def status(slice='wifi-channel', wait_for=None):
     if wait_for:
         while not all(node['geni_operational_status'] == wait_for
                     for node in nodes.values()):
-            for host in nodes:
+            for host in sorted(nodes):
                 print("{}: {}".format(
                     host, nodes[host]['geni_operational_status']))
             time.sleep(10)
@@ -138,12 +138,12 @@ def reserve(rspec='nucs.rspec', slice='wifi-channel', duration=8):
     local('omni provision {args} {slice}'.format(
         args=args,
         slice=slice))
-    execute(status, wait_for='geni_notready')
+    execute(status, wait_for='geni_notready', slice=slice)
     local('omni performoperationalaction {args} {slice} geni_start'.format(
         args=args,
         slice=slice))
 
-    execute(status, wait_for='geni_ready')
+    execute(status, wait_for='geni_ready', slice=slice)
 
 
 @task()
