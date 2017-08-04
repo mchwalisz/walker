@@ -177,7 +177,7 @@ def sanity_check():
 @runs_once
 def restart(slice='wifi-channel'):
     args = '-V3 -a twist'
-    nodes = execute(status)
+    nodes = execute(status, slice=slice)
     for host in env.hosts:
         host = host.replace('root@', '')
         local(('omni performoperationalaction {args}'
@@ -185,4 +185,4 @@ def restart(slice='wifi-channel'):
             args=args,
             slice=slice,
             urn=nodes[host]['geni_sliver_urn']))
-    execute(status, wait_for='geni_ready')
+    execute(status, wait_for='geni_ready', slice=slice)
