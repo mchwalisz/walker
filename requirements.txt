@@ -2,6 +2,7 @@ fabric3
 jinja2
 pandas
 tqdm
+click
 
 # Analysis
 jupyter
@@ -9,3 +10,4 @@ matplotlib
 seaborn
 networkx
 pydotplus
+bokeh
