@@ -21,16 +21,13 @@ def node_info():
 
 
 @task()
-@parallel()
-def run_iperf():
-    if env.hosts.index(env.host_string) == 0:
-        try:
-            run('iperf -s -i 1', timeout=15)
-        except CommandTimeout:
-            print('ending server')
-    elif env.hosts.index(env.host_string) == 1:
-        time.sleep(1)
-        run('iperf -i 1 -t  10 -c {}'.format(env.hosts[0]))
+def iperf(server=False, dest=None):
+    if server:
+        with settings(warn_only=True), hide('warnings', 'stdout', 'stderr'):
+            run('pkill iperf')
+        run('nohup iperf -s -i 1 &', pty=False)
+        return
+    return run('iperf -i 1 -t 20 -c {}'.format(dest))
 
 
 @task()
