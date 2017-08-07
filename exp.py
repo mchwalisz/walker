@@ -1,15 +1,22 @@
+#!/usr/bin/env python
+
 from time import sleep
 import click
 from fabric.api import *
 import fabfile as tasks
 
+CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-@click.group()
-def cli():
+
+@click.group(context_settings=CONTEXT_SETTINGS)
+@click.option('-v', '--verbose', count=True)
+@click.version_option('v0.1.0')
+def cli(verbose):
+    # click.echo('Verbosity: %s' % verbose)
     pass
 
 
-@cli.command()
+@cli.command('speed_test', short_help='iperf between two Wi-Fi nodes')
 @click.option('--ap', '-a', default='tplink01', help='Hostname for AP')
 @click.option('--sta', '-s', default='nuc5', help='Hostname for STA')
 @click.option('--ssid', default='TSCH', help='Network name')
