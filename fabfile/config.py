@@ -2,6 +2,7 @@ import time
 import datetime as dt
 import fabric
 from fabric.api import *
+from fabric.contrib.files import append
 import re
 import json
 from pprint import pprint
@@ -59,9 +60,9 @@ def set_hosts(slice='wifi-channel'):
     nodes = status(slice=slice, wait_for='geni_ready')
     hosts = list(nodes.keys())
     with settings(
+            hide('output', 'running'),
             host_string=hosts[0],
-            user='root' if hosts[0].startswith('tplink') else env.user,
-            shell='/bin/sh -c'), hide('output', 'running'):
+            user='root' if hosts[0].startswith('tplink') else env.user):
         try:
             run('ls')
         except fabric.exceptions.NetworkError:
@@ -74,23 +75,24 @@ def set_hosts(slice='wifi-channel'):
 def install():
     if 'tplink' in env.host_string:
         install_openwrt()
-        return
-    sudo('apt install -yq'
-        + ' wpasupplicant'
-        + ' tcpdump'
-        + ' python-setuptools'
-        + ' python-pip'
-        + ' iperf'
-        + ' netperf'
-         )
-    sudo('pip install pyric')
+    else:
+        sudo('apt install -yq'
+            + ' wpasupplicant'
+            + ' tcpdump'
+            + ' python-setuptools'
+            + ' python-pip'
+            + ' iperf'
+            + ' netperf'
+             )
     sudo('iw reg set DE')
+    sudo('pip install pyric')
 
 
 @task
 @parallel
 def install_openwrt():
-    with settings(shell='/bin/sh -c', user='root'):
+    user = env.user
+    with settings(user='root'):
         run('opkg update')
         run('opkg install '
             + ' tcpdump'
@@ -102,9 +104,14 @@ def install_openwrt():
             + ' netperf'
             + ' procps'
             + ' procps-watch'
+            + ' shadow-useradd'
             )
-        run('pip install pyric')
-        run('iw reg set DE')
+        with settings(warn_only=True):
+            run('useradd -s /bin/ash -m {}'.format(user))
+        run('mkdir -p /home/{}/.ssh'.format(user))
+        run('cp /etc/dropbear/authorized_keys /home/{}/.ssh/'.format(user))
+        run('chown -R {u} /home/{u}'.format(u=user))
+        append('/etc/sudoers', '%{} ALL=(ALL) NOPASSWD:ALL'.format(user))
 
 
 @task
@@ -172,7 +179,6 @@ def sanity_check():
     with settings(
             hide('warnings', 'stderr'),
             user='root' if env.host_string.startswith('tplink') else env.user,
-            shell='/bin/sh -c',
             warn_only=True):
         run('cat /etc/twistprotected')
 
