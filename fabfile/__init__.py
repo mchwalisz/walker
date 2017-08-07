@@ -5,6 +5,7 @@ from itertools import product
 from fabric.api import *
 from fabric.decorators import runs_once
 import pandas as pd
+from io import StringIO
 import fabfile.config as config # noqa
 import fabfile.wifi as wifi # noqa
 from fabfile.config import set_hosts  # noqa
@@ -31,11 +32,27 @@ def iperf(duration=20, server=False, dest=None, clean=False):
     if clean:
         return
     if server:
-        run('nohup iperf -s -i 1 &', pty=False)
+        run('iperf -s -i 1 -D', pty=False)
         time.sleep(1)
         return
-    return run('iperf -i 1 -t {} --reportstyle C -c {}'.format(
+    raw = run('iperf -i 1 -t {} --reportstyle C -c {}'.format(
         duration, dest))
+    columns = (
+        'timestamp',
+        'source_address',
+        'source_port',
+        'destination_address',
+        'destination_port',
+        'transfer_id',
+        'interval',
+        'transferred_bytes',
+        'bits_per_second',
+    )
+    result = pd.read_csv(
+        StringIO(raw),
+        header=0,
+        names=columns)
+    return result
 
 
 @task
