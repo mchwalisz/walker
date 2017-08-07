@@ -66,6 +66,8 @@ def speed_test(ap, sta, ssid, channel, duration, setup, teardown):
         duration=duration,
         dest=apip, hosts=[sta])
 
+    result[sta]['ap'] = ap
+    result[sta]['sta'] = sta
     result[sta].to_csv(
         'data/speed_test_{}.csv'.format(
             datetime.now().isoformat()))
