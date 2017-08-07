@@ -176,7 +176,8 @@ def connect(interface=None,
 
 
 @task
-def scan(tqdm_=None):
+@parallel
+def scan(log=False):
     """Returns scan of networks
     """
     networks = []
@@ -208,21 +209,18 @@ def scan(tqdm_=None):
                 if match:
                     curr[name] = match.group(1)
 
-        if tqdm_ is not None:
-            tqdm_.update(1)
-
-    networks = sorted(networks, key=lambda k: k['ssid'])
-    scheme = '{:<17} {:<8} {:<5} {:<12} {:<10} {}'
-    print(scheme.format('BSSID', 'dev', 'freq', 'signal', 'sta', 'ssid'))
-    for net in networks:
-        print(scheme.format(
-            net['bssid'],
-            net['sta_dev'],
-            net['freq'],
-            net['signal'],
-            net['sta'],
-            str(net['ssid']),
-        ))
+    if log:
+        scheme = '{:<17} {:<8} {:<5} {:<12} {:<10} {}'
+        print(scheme.format('BSSID', 'dev', 'freq', 'signal', 'sta', 'ssid'))
+        for net in sorted(networks, key=lambda k: k['ssid']):
+            print(scheme.format(
+                net['bssid'],
+                net['sta_dev'],
+                net['freq'],
+                net['signal'],
+                net['sta'],
+                str(net['ssid']),
+            ))
     return networks
 
 

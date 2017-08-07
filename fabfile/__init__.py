@@ -1,15 +1,11 @@
 import time
-from datetime import datetime
 # from itertools import permutations
-from itertools import product
 from fabric.api import *
-from fabric.decorators import runs_once
 import pandas as pd
 from io import StringIO
 import fabfile.config as config # noqa
 import fabfile.wifi as wifi # noqa
 from fabfile.config import set_hosts  # noqa
-import tqdm
 
 env.shell = '/bin/sh -c'
 env.pool_size = 5
@@ -53,52 +49,6 @@ def iperf(duration=20, server=False, dest=None, clean=False):
         header=0,
         names=columns)
     return result
-
-
-@task
-@runs_once
-def full_scan():
-    execute(wifi.ifaces_clean)
-    phys = execute(wifi.phys_get)
-    execute(wifi.ifaces_create, types_=('managed',))
-    data = pd.DataFrame()
-    ssid = 'twist-test'
-    t_ap = tqdm.tqdm_gui(desc='AP',
-        total=sum(map(lambda h: len(phys[h]), phys)) * 2)
-    for server in env.hosts:
-        for phy, (channel, mode) in product(
-                phys[server],
-                zip([1, 48], ['g', 'a'])):
-            t_ap.set_description('AP {}'.format(server))
-            t_ap.set_postfix(phy=phy, channel=channel)
-            t_ap.update(1)
-            # Setup
-            try:
-                execute(wifi.create_ap,
-                    channel=channel,
-                    hw_mode=mode,
-                    ssid=ssid,
-                    phy=phy,
-                    hosts=[server])
-            except wifi.FabricRunException:
-                print("Cannot setup AP")
-                continue
-            # Experiment
-            with settings(parallel=True, pool_size=10):
-                scan = execute(wifi.scan,
-                    hosts=[x for x in env.hosts if x != server])
-            for scanner in scan:
-                s = pd.DataFrame.from_dict(scan[scanner], orient='columns')
-                if s.empty:
-                    continue
-                s.ix[s.ssid == ssid, 'ap'] = server
-                s.ix[s.ssid == ssid, 'ap_dev'] = phy
-                data = data.append(s, ignore_index=True)
-            # Tear down
-            execute(wifi.ifaces_clean, hosts=[server])
-            execute(wifi.ifaces_create, types_=('managed',), hosts=[server])
-    data.to_csv('data/scan_{}.csv'.format(datetime.now().isoformat()))
-    print(data)
 
 
 @task

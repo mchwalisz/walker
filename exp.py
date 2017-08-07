@@ -1,10 +1,12 @@
 #!/usr/bin/env python
 
-from time import sleep
+from datetime import datetime
+from itertools import product
 import click
+import pandas as pd
+import tqdm
 from fabric.api import *
 import fabfile as tasks
-from datetime import datetime
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
@@ -76,6 +78,62 @@ def speed_test(ap, sta, ssid, channel, duration, setup, teardown):
     if teardown:
         execute(tasks.iperf, clean=True, hosts=[ap, sta])
         execute(tasks.wifi.ifaces_clean, hosts=[ap, sta])
+
+
+@cli.command('network_scan', short_help='Perform network scan between nodes')
+@click.option('hosts', '--hosts', '-H',
+    help='Node used for scanning, comma separated list')
+@click.option('--show-all', '-a',
+    default=False, is_flag=True,
+    help='Output all scan results. False returns only own ssid')
+def network_scan(hosts, show_all):
+    hosts = ['root@' + h if h.startswith('tplink') else h
+        for h in hosts.split(',')]
+    # Make sure everything is cleaned up
+    execute(tasks.wifi.ifaces_clean, hosts=hosts)
+    phys = execute(tasks.wifi.phys_get, hosts=hosts)
+    execute(tasks.wifi.ifaces_create, types_=('managed',), hosts=hosts)
+
+    data = pd.DataFrame()
+    ssid = 'twist-test'
+    t_ap = tqdm.tqdm(desc='AP',
+        total=sum(map(lambda h: len(phys[h]), phys)) * 2)
+
+    for server in hosts:
+        for phy, (channel, mode) in product(
+                phys[server],
+                zip([1, 48], ['g', 'a'])):
+            t_ap.set_postfix(ap=server, phy=phy, channel=channel)
+            t_ap.update(1)
+            # Setup
+            try:
+                execute(tasks.wifi.create_ap,
+                    channel=channel,
+                    hw_mode=mode,
+                    ssid=ssid,
+                    phy=phy,
+                    hosts=[server])
+            except tasks.wifi.FabricRunException:
+                print("Cannot setup AP")
+                continue
+            # Experiment
+            scan = execute(tasks.wifi.scan,
+                hosts=[x for x in hosts if x != server])
+            for scanner in scan:
+                s = pd.DataFrame.from_dict(scan[scanner], orient='columns')
+                if s.empty:
+                    continue
+                s.ix[s.ssid == ssid, 'ap'] = server
+                s.ix[s.ssid == ssid, 'ap_dev'] = phy
+                if show_all:
+                    data = data.append(s, ignore_index=True)
+                else:
+                    data = data.append(s[s.ssid == ssid], ignore_index=True)
+            # Tear down
+            execute(tasks.wifi.ifaces_clean, hosts=[server])
+            execute(tasks.wifi.ifaces_create,
+                types_=('managed',), hosts=[server])
+    data.to_csv('data/scan_{}.csv'.format(datetime.now().isoformat()))
 
 
 if __name__ == '__main__':
