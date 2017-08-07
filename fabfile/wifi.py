@@ -25,24 +25,27 @@ def sudo_(cmd, out=False):
 
 @task()
 @parallel()
-def ifaces_create(types_=('managed',)):
-    phy_match = re.findall('Wiphy (\S*)',
-        sudo_('iw phy'),
-        re.MULTILINE)
+def ifaces_create(phys=None, types_=('managed',)):
+    if phys is None:
+        phys = re.findall('Wiphy (\S*)',
+            sudo_('iw phy'),
+            re.MULTILINE)
     name_prefix = {
         'managed': 'w',
         'ibss': 'i', 'monitor': 'i',
         'mesh': 's',
         'wds': 'd'}
-    for phy, type_ in product(phy_match, types_):
+    for phy, type_ in product(phys, types_):
         sudo_(('iw phy {} interface ' +
-            'add {} type {}').format(phy, name_prefix[type_] + phy[-1], type_))
+            'add {} type {}').format(
+            phy, name_prefix[type_] + phy[-1], type_))
 
 
 @task()
 @parallel()
 def ifaces_clean():
     with settings(warn_only=True):
+        sudo_('wifi down')
         sudo_('pkill hostapd')
         sudo_('pkill wpa_supplicant')
     for iface in ifaces_get():
