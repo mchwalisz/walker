@@ -155,9 +155,6 @@ def release(slice='wifi-channel'):
     local('omni delete {args} {slice}'.format(
         args=args,
         slice=slice))
-    # NOT supported
-    # local('omni deleteslice {slice}'.format(
-    #     slice=slice))
 
 
 @task()

@@ -3,7 +3,6 @@ from datetime import datetime
 # from itertools import permutations
 from itertools import product
 from fabric.api import *
-from fabric.exceptions import CommandTimeout
 from fabric.decorators import runs_once
 import pandas as pd
 import fabfile.config as config # noqa
@@ -16,6 +15,7 @@ env.pool_size = 5
 
 
 @task()
+@parallel()
 def node_info():
     with settings(warn_only=True):
         run('cat /etc/twistprotected')
