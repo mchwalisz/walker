@@ -1,7 +1,5 @@
 import re
-from random import choice
 from itertools import product
-from string import ascii_letters, digits
 from fabric.api import *
 import fabric.contrib.files as fabfiles
 
@@ -10,25 +8,12 @@ class FabricRunException(Exception):
     pass
 
 
-def sudo_(cmd, out=False):
-    if out:
-        args = tuple()
-    else:
-        args = ('warnings', 'stdout', 'stderr')
-    with hide(*args):
-        if 'tplink' in env.host_string:
-            with settings(shell='/bin/sh -c', user='root'):
-                return run(cmd)
-        else:
-            return sudo(cmd)
-
-
 @task
 @parallel
 def ifaces_create(phys=None, types_=('managed',)):
     if phys is None:
         phys = re.findall('Wiphy (\S*)',
-            sudo_('iw phy'),
+            sudo('iw phy'),
             re.MULTILINE)
     name_prefix = {
         'managed': 'w',
@@ -36,24 +21,24 @@ def ifaces_create(phys=None, types_=('managed',)):
         'mesh': 's',
         'wds': 'd'}
     for phy, type_ in product(phys, types_):
-        sudo_(('iw phy {} interface ' +
+        sudo(('iw phy {} interface ' +
             'add {} type {}').format(
             phy, name_prefix[type_] + phy[-1], type_))
 
 
 @task
 @parallel
+@with_settings(hide('warnings', 'stdout', 'stderr'), warn_only=True)
 def ifaces_clean():
-    with settings(warn_only=True):
-        sudo_('wifi down')
-        sudo_('pkill hostapd')
-        sudo_('pkill wpa_supplicant')
+    sudo('wifi down')
+    sudo('pkill hostapd')
+    sudo('pkill wpa_supplicant')
     for iface in ifaces_get():
-        sudo_('iw dev {} del'.format(iface))
+        sudo('iw dev {} del'.format(iface))
 
 
 def ifaces_get():
-    devices = sudo_('iw dev')
+    devices = sudo('iw dev')
     for line in devices.split('\n'):
         line = line.strip()
         if line.startswith('Interface'):
@@ -63,10 +48,10 @@ def ifaces_get():
 @task
 @parallel
 def phys_get():
-    phy_list = sudo_('iw phy')
+    phy_list = sudo('iw phy')
     phys = [phy.group('phy')
         for phy in re.finditer(r'Wiphy\s(?P<phy>\S*)', phy_list.stdout)]
-    # phys.append(sudo_('hostname'))
+    # phys.append(sudo('hostname'))
     return phys
 
 
@@ -101,15 +86,15 @@ def create_ap(
         context['interface'] = interface
     with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
         if phy is not None:
-            sudo_('ip dev {} del'.format(interface))
-            sudo_('iw {} interface add {} type managed'.format(phy, interface))
+            sudo('ip dev {} del'.format(interface))
+            sudo('iw {} interface add {} type managed'.format(phy, interface))
         else:
-            sudo_('iw dev {} set type managed'.format(interface))
-        sudo_('pkill /tmp/hostapd-{}.pid'.format(interface))
+            sudo('iw dev {} set type managed'.format(interface))
+        sudo('pkill /tmp/hostapd-{}.pid'.format(interface))
 
     if bssid is None:
         mac = re.search('ether ([0-9a-f:]{17})',
-            sudo_('ip link show dev {}'.format(interface))).group(1)
+            sudo('ip link show dev {}'.format(interface))).group(1)
         bssid = '02:' + mac[3:]
         context['bssid'] = bssid
 
@@ -121,10 +106,10 @@ def create_ap(
         backup=False)
 
     with settings(abort_exception=FabricRunException):
-        sudo_(('hostapd -tB -P /tmp/hostapd-{0}.pid'
+        sudo(('hostapd -tB -P /tmp/hostapd-{0}.pid'
             ' -f /tmp/hostapd-{0}.log'
             ' ~/hostapd-{0}.conf').format(interface))
-    sudo_('ip addr add {}/24 dev {}'.format(ip, interface))
+    sudo('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
 @task
@@ -150,14 +135,14 @@ def connect(interface=None,
         interface = 'w' + phy[-1]
         context['interface'] = interface
 
-    with settings(warn_only=True):
-        sudo_('pkill /tmp/wpasup-{}.pid'.format(interface))
-        sudo_('rfkill unblock wifi')
+    with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
+        sudo('pkill /tmp/wpasup-{}.pid'.format(interface))
+        sudo('rfkill unblock wifi')
         if phy is not None:
-            sudo_('ip dev {} del'.format(interface))
-            sudo_('iw {} interface add {} type managed'.format(phy, interface))
+            sudo('ip dev {} del'.format(interface))
+            sudo('iw {} interface add {} type managed'.format(phy, interface))
         else:
-            sudo_('iw dev {} set type managed'.format(interface))
+            sudo('iw dev {} set type managed'.format(interface))
 
     fabfiles.upload_template('wpasup.conf.jn2',
         '~/wpasup-{}.pid'.format(interface),
@@ -165,14 +150,14 @@ def connect(interface=None,
         template_dir='templates',
         use_jinja=True,
         backup=False)
-    sudo_('wpa_supplicant '
+    sudo('wpa_supplicant '
         + ' -c ~/wpasup-{}.pid'.format(interface)
         + ' -D nl80211'
         + ' -i {}'.format(interface)
         + ' -P /tmp/wpasup-{}.pid'.format(interface)
         + ' -f /tmp/wpasup-{}.log'.format(interface)
         + ' -B')
-    sudo_('ip addr add {}/24 dev {}'.format(ip, interface))
+    sudo('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
 @task
@@ -183,9 +168,9 @@ def scan(log=False):
     networks = []
     curr = None
     for iface in ifaces_get():
-        sudo_('ip link set {} up'.format(iface))
+        sudo('ip link set {} up'.format(iface))
         with settings(warn_only=True):
-            scan_result = sudo_('iw dev {} scan'.format(iface))
+            scan_result = sudo('iw dev {} scan'.format(iface))
 
         for line in scan_result.splitlines():
             line = line.strip()
@@ -231,10 +216,10 @@ def clean():
     reloaded
     """
     with settings(warn_only=True, quiet=True):
-        sudo_('pkill hostapd', out=True)
-        sudo_('pkill wpa_supplicant', out=True)
-    sudo_('modprobe -r ath9k')
-    sudo_('modprobe ath9k')
+        sudo('pkill hostapd')
+        sudo('pkill wpa_supplicant')
+    sudo('modprobe -r ath9k')
+    sudo('modprobe ath9k')
 
 
 @task
@@ -242,13 +227,13 @@ def info(prefix='.'):
     'Gather node info to files'
     host = env.host_string.split('@')[-1]
     phy_match = re.findall('Wiphy (\w*)',
-        sudo_('iw phy'))
+        sudo('iw phy'))
     for phy in phy_match:
-        phy_info = sudo_('iw phy {} info'.format(phy))
-        udevadm = sudo_('udevadm info /sys/class/ieee80211/{}'.format(phy))
+        phy_info = sudo('iw phy {} info'.format(phy))
+        udevadm = sudo('udevadm info /sys/class/ieee80211/{}'.format(phy))
         pci = re.search(r'^P:.*?(\d{4}:\d{2}:\d{2}.\d)', udevadm).group(1)
-        lspci = sudo_('lspci -vvnnD -s {}'.format(pci))
-        udevadmall = sudo_(
+        lspci = sudo('lspci -vvnnD -s {}'.format(pci))
+        udevadmall = sudo(
             'udevadm info -a /sys/class/ieee80211/{}'.format(phy))
         with open('{}/{}-{}.info'.format(
                 prefix, host, phy), 'w') as f:
