@@ -14,8 +14,8 @@ env.shell = '/bin/sh -c'
 env.pool_size = 5
 
 
-@task()
-@parallel()
+@task
+@parallel
 def node_info():
     with settings(warn_only=True):
         run('cat /etc/twistprotected')
@@ -23,7 +23,7 @@ def node_info():
         run('iw dev')
 
 
-@task()
+@task
 @serial
 def iperf(duration=20, server=False, dest=None, clean=False):
     with settings(warn_only=True), hide('warnings', 'stdout', 'stderr'):
@@ -38,7 +38,7 @@ def iperf(duration=20, server=False, dest=None, clean=False):
         duration, dest))
 
 
-@task()
+@task
 @runs_once
 def full_scan():
     execute(wifi.ifaces_clean)
@@ -84,7 +84,7 @@ def full_scan():
     print(data)
 
 
-@task()
+@task
 def check_reg():
     for reg in ['00', 'DE', 'US', 'EU']:
         sudo(f'iw reg set {reg}')

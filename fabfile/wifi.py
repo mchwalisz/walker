@@ -23,8 +23,8 @@ def sudo_(cmd, out=False):
             return sudo(cmd)
 
 
-@task()
-@parallel()
+@task
+@parallel
 def ifaces_create(phys=None, types_=('managed',)):
     if phys is None:
         phys = re.findall('Wiphy (\S*)',
@@ -41,8 +41,8 @@ def ifaces_create(phys=None, types_=('managed',)):
             phy, name_prefix[type_] + phy[-1], type_))
 
 
-@task()
-@parallel()
+@task
+@parallel
 def ifaces_clean():
     with settings(warn_only=True):
         sudo_('wifi down')
@@ -60,8 +60,8 @@ def ifaces_get():
             yield line.split(' ')[-1]
 
 
-@task()
-@parallel()
+@task
+@parallel
 def phys_get():
     phy_list = sudo_('iw phy')
     phys = [phy.group('phy')
@@ -70,7 +70,7 @@ def phys_get():
     return phys
 
 
-@task()
+@task
 def create_ap(
         interface=None,
         phy=None,
@@ -127,7 +127,7 @@ def create_ap(
     sudo_('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
-@task()
+@task
 def connect(interface=None,
         phy=None,
         ssid='twist-test',
@@ -175,7 +175,7 @@ def connect(interface=None,
     sudo_('ip addr add {}/24 dev {}'.format(ip, interface))
 
 
-@task()
+@task
 def scan(tqdm_=None):
     """Returns scan of networks
     """
@@ -226,8 +226,8 @@ def scan(tqdm_=None):
     return networks
 
 
-@task()
-@parallel()
+@task
+@parallel
 def clean():
     """Makes sure hostapd and wpa_supplicant are killed and ath9k module
     reloaded
@@ -239,7 +239,7 @@ def clean():
     sudo_('modprobe ath9k')
 
 
-@task()
+@task
 def info(prefix='.'):
     'Gather node info to files'
     host = env.host_string.split('@')[-1]

@@ -7,7 +7,7 @@ import json
 from pprint import pprint
 
 
-@task()
+@task
 def status(slice='wifi-channel', wait_for=None):
     """Gets slice status
 
@@ -70,8 +70,8 @@ def set_hosts(slice='wifi-channel'):
     env.hosts.extend(hosts)
 
 
-@task()
-@parallel()
+@task
+@parallel
 def install():
     if 'tplink' in env.host_string:
         install_openwrt()
@@ -87,8 +87,8 @@ def install():
     sudo('iw reg set DE')
 
 
-@task()
-@parallel()
+@task
+@parallel
 def install_openwrt():
     with settings(shell='/bin/sh -c'):
         run('opkg update')
@@ -104,7 +104,7 @@ def install_openwrt():
         run('iw reg set DE')
 
 
-@task()
+@task
 def reserve(rspec='nucs', slice='wifi-channel', duration=8):
     '''Reserve twist resources (if necessary)
 
@@ -149,7 +149,7 @@ def reserve(rspec='nucs', slice='wifi-channel', duration=8):
     execute(status, wait_for='geni_ready', slice=slice)
 
 
-@task()
+@task
 def release(slice='wifi-channel'):
     args = '-V3 -a twist'
     local('omni delete {args} {slice}'.format(
@@ -157,14 +157,14 @@ def release(slice='wifi-channel'):
         slice=slice))
 
 
-@task()
+@task
 def remote():
     'Set config for remote work'
     env.gateway = 'proxyuser@api.twist.tu-berlin.de:2222'
 
 
-@task()
-@parallel()
+@task
+@parallel
 def sanity_check():
     with settings(
             hide('warnings', 'stderr'),
@@ -173,7 +173,7 @@ def sanity_check():
         run('cat /etc/twistprotected')
 
 
-@task()
+@task
 @hosts('localhost')
 def restart(slice='wifi-channel'):
     args = '-V3 -a twist'
