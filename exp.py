@@ -43,10 +43,6 @@ def cli(verbose):
     help='Tear down networks')
 def speed_test(ap, sta, ssid, channel, duration, setup, teardown):
     """Measures throughput between AP and STA with iperf"""
-    if ap.startswith('tplink'):
-        ap = 'root@' + ap
-    if sta.startswith('tplink'):
-        sta = 'root@' + sta
     apip = '10.100.1.1'
 
     if setup:
@@ -87,8 +83,7 @@ def speed_test(ap, sta, ssid, channel, duration, setup, teardown):
     default=False, is_flag=True,
     help='Output all scan results. False returns only own ssid')
 def network_scan(hosts, show_all):
-    hosts = ['root@' + h if h.startswith('tplink') else h
-        for h in hosts.split(',')]
+    hosts = hosts.split(',')
     # Make sure everything is cleaned up
     execute(tasks.wifi.ifaces_clean, hosts=hosts)
     phys = execute(tasks.wifi.phys_get, hosts=hosts)

@@ -58,10 +58,9 @@ def status(slice='wifi-channel', wait_for=None):
 def set_hosts(slice='wifi-channel'):
     nodes = status(slice=slice, wait_for='geni_ready')
     hosts = list(nodes.keys())
-    hosts = ['root@' + name if name.startswith('tplink') else name
-        for name in hosts]
     with settings(
             host_string=hosts[0],
+            user='root' if hosts[0].startswith('tplink') else env.user,
             shell='/bin/sh -c'), hide('output', 'running'):
         try:
             run('ls')
@@ -91,7 +90,7 @@ def install():
 @task
 @parallel
 def install_openwrt():
-    with settings(shell='/bin/sh -c'):
+    with settings(shell='/bin/sh -c', user='root'):
         run('opkg update')
         run('opkg install '
             + ' tcpdump'
@@ -101,6 +100,8 @@ def install_openwrt():
             + ' openssh-sftp-server'
             + ' procps-pkill'
             + ' netperf'
+            + ' procps'
+            + ' procps-watch'
             )
         run('pip install pyric')
         run('iw reg set DE')
@@ -170,6 +171,7 @@ def remote():
 def sanity_check():
     with settings(
             hide('warnings', 'stderr'),
+            user='root' if env.host_string.startswith('tplink') else env.user,
             shell='/bin/sh -c',
             warn_only=True):
         run('cat /etc/twistprotected')

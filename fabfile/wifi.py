@@ -17,7 +17,7 @@ def sudo_(cmd, out=False):
         args = ('warnings', 'stdout', 'stderr')
     with hide(*args):
         if 'tplink' in env.host_string:
-            with settings(shell='/bin/sh -c'):
+            with settings(shell='/bin/sh -c', user='root'):
                 return run(cmd)
         else:
             return sudo(cmd)
