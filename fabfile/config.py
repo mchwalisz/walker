@@ -82,6 +82,7 @@ def install():
         + ' python-setuptools'
         + ' python-pip'
         + ' iperf'
+        + ' netperf'
          )
     sudo('pip install pyric')
     sudo('iw reg set DE')
@@ -99,6 +100,7 @@ def install_openwrt():
             + ' iperf'
             + ' openssh-sftp-server'
             + ' procps-pkill'
+            + ' netperf'
             )
         run('pip install pyric')
         run('iw reg set DE')
