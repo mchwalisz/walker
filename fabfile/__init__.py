@@ -24,13 +24,18 @@ def node_info():
 
 
 @task()
-def iperf(server=False, dest=None):
-    if server:
-        with settings(warn_only=True), hide('warnings', 'stdout', 'stderr'):
-            run('pkill iperf')
-        run('nohup iperf -s -i 1 &', pty=False)
+@serial
+def iperf(duration=20, server=False, dest=None, clean=False):
+    with settings(warn_only=True), hide('warnings', 'stdout', 'stderr'):
+        run('pkill iperf')
+    if clean:
         return
-    return run('iperf -i 1 -t 20 -c {}'.format(dest))
+    if server:
+        run('nohup iperf -s -i 1 &', pty=False)
+        time.sleep(1)
+        return
+    return run('iperf -i 1 -t {} --reportstyle C -c {}'.format(
+        duration, dest))
 
 
 @task()

@@ -43,10 +43,10 @@ def speed_test(ap, sta, ssid, channel):
         hosts=[sta])
 
     execute(tasks.iperf, server=True, hosts=[ap])
-    sleep(2)
     result = execute(tasks.iperf,
         dest=apip, hosts=[sta])
     print(result)
+    execute(tasks.iperf, clean=True, hosts=[ap, sta])
 
 
 if __name__ == '__main__':
