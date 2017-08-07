@@ -128,7 +128,7 @@ def create_ap(
 
 
 @task()
-def connect(interface='wlan0',
+def connect(interface=None,
         phy=None,
         ssid='twist-test',
         psk='dUnZQFgqkYron1rKiLPGq4CVfToL9RuZ',
@@ -144,23 +144,29 @@ def connect(interface='wlan0',
         ip (str): IP address of the AP
     """
     context = locals()
+    if interface is None and phy is None:
+        raise AttributeError('One of interface or phy must be provided')
+    if interface is None:
+        interface = 'w' + phy[-1]
+        context['interface'] = interface
 
-    with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
+    with settings(warn_only=True):
+        sudo_('pkill /tmp/wpasup-{}.pid'.format(interface))
+        sudo_('rfkill unblock wifi')
         if phy is not None:
             sudo_('ip dev {} del'.format(interface))
             sudo_('iw {} interface add {} type managed'.format(phy, interface))
         else:
             sudo_('iw dev {} set type managed'.format(interface))
-        sudo_('pkill /tmp/wpasup-{}.pid'.format(interface))
 
     fabfiles.upload_template('wpasup.conf.jn2',
-        '~/wpasup.conf',
+        '~/wpasup-{}.pid'.format(interface),
         context=context,
         template_dir='templates',
         use_jinja=True,
         backup=False)
     sudo_('wpa_supplicant '
-        + ' -c ~/wpasup.conf'
+        + ' -c ~/wpasup-{}.pid'.format(interface)
         + ' -D nl80211'
         + ' -i {}'.format(interface)
         + ' -P /tmp/wpasup-{}.pid'.format(interface)
