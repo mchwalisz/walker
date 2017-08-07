@@ -11,6 +11,9 @@ import fabfile.wifi as wifi # noqa
 from fabfile.config import set_hosts  # noqa
 import tqdm
 
+env.shell = '/bin/sh -c'
+env.pool_size = 5
+
 
 @task()
 def node_info():

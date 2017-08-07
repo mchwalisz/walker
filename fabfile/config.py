@@ -71,7 +71,7 @@ def set_hosts(slice='wifi-channel'):
 
 
 @task()
-@parallel(pool_size=10)
+@parallel()
 def install():
     if 'tplink' in env.host_string:
         install_openwrt()
