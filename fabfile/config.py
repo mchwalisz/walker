@@ -105,10 +105,13 @@ def install_openwrt():
 
 
 @task()
-def reserve(rspec='nucs.rspec', slice='wifi-channel', duration=8):
+def reserve(rspec='nucs', slice='wifi-channel', duration=8):
     '''Reserve twist resources (if necessary)
 
     Args:
+        rspec (str): Base filename from rspecs folder, specifies nodes for
+            reservation (default=nucs)
+        slice (str): Slice name
         duration (int): Reservation duration in hours.
     '''
     args = '-V3 -a twist'
@@ -128,7 +131,7 @@ def reserve(rspec='nucs.rspec', slice='wifi-channel', duration=8):
     local('omni renewslice {slice} {end}'.format(
         slice=slice,
         end=end))
-    alloc = local('omni allocate {args} {slice} rspecs/{rspec}'.format(
+    alloc = local('omni allocate {args} {slice} rspecs/{rspec}.rspec'.format(
         args=args,
         rspec=rspec,
         slice=slice), capture=True)
