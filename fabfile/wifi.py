@@ -146,13 +146,13 @@ def connect(interface=None,
             sudo('iw dev {} set type managed'.format(interface))
 
     fabfiles.upload_template('wpasup.conf.jn2',
-        '~/wpasup-{}.pid'.format(interface),
+        '~/wpasup-{}.conf'.format(interface),
         context=context,
         template_dir='templates',
         use_jinja=True,
         backup=False)
     sudo('wpa_supplicant '
-        + ' -c ~/wpasup-{}.pid'.format(interface)
+        + ' -c ~/wpasup-{}.conf'.format(interface)
         + ' -D nl80211'
         + ' -i {}'.format(interface)
         + ' -P /tmp/wpasup-{}.pid'.format(interface)
