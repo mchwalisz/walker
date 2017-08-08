@@ -38,7 +38,8 @@ def status(slice='wifi-channel', wait_for=None):
     checkcmd = 'omni describe {args} {slice}'.format(
         args=args,
         slice=slice)
-    check = local(checkcmd, capture=True)
+    with hide('warnings', 'stdout', 'stderr'):
+        check = local(checkcmd, capture=True)
     nodes = parse_status(check.stderr)
     if wait_for:
         while not all(node['geni_operational_status'] == wait_for
@@ -105,7 +106,9 @@ def install_openwrt():
             + ' procps'
             + ' procps-watch'
             + ' shadow-useradd'
+            + ' sudo'
             )
+        run('mkdir -p /home/')
         with settings(warn_only=True):
             run('useradd -s /bin/ash -m {}'.format(user))
         run('mkdir -p /home/{}/.ssh'.format(user))
