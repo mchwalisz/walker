@@ -68,10 +68,10 @@ def speed_test(ap, sta, ssid, channel, duration, setup, teardown):
 
     result[sta]['ap'] = ap
     result[sta]['sta'] = sta
-    result[sta].to_csv(
-        'data/speed_test_{}.csv'.format(
-            datetime.now().isoformat()))
-    print(result)
+    if not result[sta].empty:
+        result[sta].to_csv(
+            'data/speed_test_{}.csv'.format(
+                datetime.now().isoformat()))
 
     if teardown:
         execute(tasks.iperf, clean=True, hosts=[ap, sta])
@@ -130,7 +130,8 @@ def network_scan(hosts, show_all):
             execute(tasks.wifi.ifaces_clean, hosts=[server])
             execute(tasks.wifi.ifaces_create,
                 types_=('managed',), hosts=[server])
-    data.to_csv('data/scan_{}.csv'.format(datetime.now().isoformat()))
+    if not data.empty:
+        data.to_csv('data/scan_{}.csv'.format(datetime.now().isoformat()))
 
 
 if __name__ == '__main__':
