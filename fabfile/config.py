@@ -2,7 +2,7 @@ import time
 import datetime as dt
 import fabric
 from fabric.api import *
-from fabric.contrib.files import append
+from fabric.contrib.files import append, contains
 import re
 import json
 from pprint import pprint
@@ -114,7 +114,9 @@ def install_openwrt():
         run('mkdir -p /home/{}/.ssh'.format(user))
         run('cp /etc/dropbear/authorized_keys /home/{}/.ssh/'.format(user))
         run('chown -R {u} /home/{u}'.format(u=user))
-        append('/etc/sudoers', '%{} ALL=(ALL) NOPASSWD:ALL'.format(user))
+        if not contains('/etc/sudoers', 'Defaults env_keep += "HOME"'):
+            append('/etc/sudoers', 'Defaults env_keep += "HOME"')
+            append('/etc/sudoers', '%{} ALL=(ALL) NOPASSWD:ALL'.format(user))
 
 
 @task

@@ -29,7 +29,7 @@ def iperf(duration=20, server=False, dest=None, clean=False):
         return
     if server:
         run('iperf -s -i 1 -D', pty=False)
-        time.sleep(1)
+        time.sleep(2)
         return
     raw = run('iperf -i 1 -t {} --reportstyle C -c {}'.format(
         duration, dest))

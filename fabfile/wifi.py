@@ -110,6 +110,7 @@ def create_ap(
             ' -f /tmp/hostapd-{0}.log'
             ' ~/hostapd-{0}.conf').format(interface))
     sudo('ip addr add {}/24 dev {}'.format(ip, interface))
+    sudo('echo 1 > /proc/sys/net/ipv4/ip_forward')
 
 
 @task
