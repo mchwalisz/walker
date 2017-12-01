@@ -1,10 +1,12 @@
-import time
 import datetime as dt
 import fabric
-from fabric.api import *
-from fabric.contrib.files import append, contains
-import re
 import json
+import re
+import time
+
+from fabric.api import *
+from fabric.contrib.files import append
+from fabric.contrib.files import contains
 from pprint import pprint
 
 
