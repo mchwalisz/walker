@@ -59,38 +59,56 @@ def phys_get():
 def create_ap(
         interface=None,
         phy=None,
-        ssid='twist-test',
-        channel=48,
-        hw_mode='a',
-        psk='dUnZQFgqkYron1rKiLPGq4CVfToL9RuZ',
+        phy_irq=None,
+        ssid='experiment',
+        channel=11,
+        hw_mode='g',
+        psk=None,
         bssid=None,
-        ip='10.100.1.1'):
+        ip='10.1.1.1',
+        monitor=False):
     """Task to create Wi-Fi AP with hostapd on a node.
 
     Args:
         interface (str): Wi-Fi interface
         phy (str): Physical device. If not None it will force create new
             interface on this device.
+        phy_irq (str): Uniquely identify physical device by interrupt handler.
         ssid (str): Network name
         channel (int): Used channel
         hw_mode (str): Hardware modes
         psk (str): Password
         bssid (str): Used BSSID, will be generated if None
         ip (str): IP address of the AP
+        monitor (bool): Will create monitor interface if True
     """
     context = locals()
-    if interface is None and phy is None:
+    if interface is None and phy is None and phy_irq is None:
         raise AttributeError('One of interface or phy must be provided')
+    if phy is None and phy_irq is not None:
+        phy = get_phy(phy_irq)
+        context['phy'] = phy
     if interface is None:
         interface = 'w' + phy
         context['interface'] = interface
     with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
+        sudo('pkill -F /tmp/hostapd-{}.pid'.format(interface))
+        time.sleep(2)
         if phy is not None:
             sudo('ip dev {} del'.format(interface))
+            sudo('ip addr flush dev {}'.format(interface))
             sudo('iw {} interface add {} type managed'.format(phy, interface))
+            if monitor:
+                mon_iface = 'mon' + interface
+                sudo(('iw {} interface add {} '
+                    + 'type monitor flags fcsfail').format(
+                        phy,
+                        mon_iface))
+                sudo('ip link set {} up'.format(mon_iface))
+
         else:
             sudo('iw dev {} set type managed'.format(interface))
-        sudo('pkill -F /tmp/hostapd-{}.pid'.format(interface))
+            sudo('ip addr flush dev {}'.format(interface))
 
     if bssid is None:
         mac = re.search('ether ([0-9a-f:]{17})',
@@ -114,36 +132,54 @@ def create_ap(
 
 
 @task
-def connect(interface=None,
+def connect(
+        interface=None,
         phy=None,
-        ssid='twist-test',
-        psk='dUnZQFgqkYron1rKiLPGq4CVfToL9RuZ',
-        ip='10.100.1.2'):
+        phy_irq=None,
+        ssid='experiment',
+        psk=None,
+        ip=None,
+        monitor=False):
     """Task to connect a node to an AP.
 
     Args:
         interface (str): Wi-Fi interface
         phy (str): Physical device. If not None it will force create new
             interface on this device.
+        phy_irq (str): Uniquely identify physical device by interrupt handler.
         ssid (str): Network name
         psk (str): Password
         ip (str): IP address of the AP
     """
     context = locals()
-    if interface is None and phy is None:
+    if interface is None and phy is None and phy_irq is None:
         raise AttributeError('One of interface or phy must be provided')
+    if phy is None and phy_irq is not None:
+        phy = get_phy(phy_irq)
+        context['phy'] = phy
     if interface is None:
         interface = 'w' + phy[-1]
         context['interface'] = interface
 
+    if ip is None:
+        ip = '10.1.1.{}'.format(hash(env.host_string) % 2**8)
+
     with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
         sudo('pkill -F /tmp/wpasup-{}.pid'.format(interface))
+        time.sleep(2)
         sudo('rfkill unblock wifi')
         if phy is not None:
             sudo('ip dev {} del'.format(interface))
             sudo('iw {} interface add {} type managed'.format(phy, interface))
+            if monitor:
+                mon_iface = 'mon' + interface
+                sudo('iw {} interface add {} type monitor'.format(
+                    phy,
+                    mon_iface))
+                sudo('ip link set {} up'.format(mon_iface))
         else:
             sudo('iw dev {} set type managed'.format(interface))
+        sudo('ip addr flush dev {}'.format(interface))
 
     fabfiles.upload_template('wpasup.conf.jn2',
         '~/wpasup-{}.conf'.format(interface),

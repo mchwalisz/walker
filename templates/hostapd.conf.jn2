@@ -20,12 +20,13 @@ preamble=1
 wmm_enabled=1
 ignore_broadcast_ssid=0
 uapsd_advertisement_enabled=1
-wpa_passphrase={{ psk }}
+
+ssid={{ ssid }}
+{# bssid={{ bssid }} #}
+{% if psk is not none %}
 auth_algs=1
 wpa=2
 wpa_pairwise=CCMP
-ssid={{ ssid }}
 wpa_key_mgmt=WPA-PSK
-okc=0
-disable_pmksa_caching=1
-bssid={{ bssid }}
+wpa_passphrase={{ psk }}
+{% endif %}

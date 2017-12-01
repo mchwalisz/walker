@@ -1,9 +1,16 @@
+ctrl_interface=/run/wpasup_{{ interface }}
+update_config=1
+
 network={
     scan_ssid=1
     ssid="{{ ssid }}"
+    {% if psk is not none %}
     key_mgmt=WPA-PSK
     psk="{{ psk }}"
     proto=RSN
     pairwise=CCMP
     group=CCMP
+    {% else %}
+    key_mgmt=NONE
+    {% endif %}
 }
