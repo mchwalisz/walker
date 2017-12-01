@@ -90,7 +90,7 @@ def create_ap(
             sudo('iw {} interface add {} type managed'.format(phy, interface))
         else:
             sudo('iw dev {} set type managed'.format(interface))
-        sudo('pkill /tmp/hostapd-{}.pid'.format(interface))
+        sudo('pkill -F /tmp/hostapd-{}.pid'.format(interface))
 
     if bssid is None:
         mac = re.search('ether ([0-9a-f:]{17})',
@@ -137,7 +137,7 @@ def connect(interface=None,
         context['interface'] = interface
 
     with settings(hide('warnings', 'stdout', 'stderr'), warn_only=True):
-        sudo('pkill /tmp/wpasup-{}.pid'.format(interface))
+        sudo('pkill -F /tmp/wpasup-{}.pid'.format(interface))
         sudo('rfkill unblock wifi')
         if phy is not None:
             sudo('ip dev {} del'.format(interface))
