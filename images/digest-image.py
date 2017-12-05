@@ -2,7 +2,6 @@
 
 import os
 import boto3
-import requests
 import jinja2
 import yaml
 import sys
