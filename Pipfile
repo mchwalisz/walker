@@ -12,6 +12,8 @@ click = "*"
 "jinja2" = "*"
 jupyter = "*"
 pandas = "*"
+"boto3" = "*"
+diskimage-builder = "*"
 
 
 [dev-packages]
