@@ -60,7 +60,7 @@ def __render_rspec(url):
 @click.group(invoke_without_command=True)
 @click.option('--diskimage', default='image.tgz',
               help='Filename for diskimage')
-@click.option('--release', default='xenial', help='Ubuntu release codename')
+@click.option('--release', default='artful', help='Ubuntu release codename')
 @click.pass_context
 def cli(ctx, diskimage, release):
     if ctx.invoked_subcommand is None:
