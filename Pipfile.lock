@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "71e8fd54fad93407bfce65fc63475557f657fceb536d4cf3440d07e94cb882b8"
+            "sha256": "0bc1dec348060ed82f2fc18bef0c2459963c206d74ce227a62bba365f2e23350"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -52,10 +52,10 @@
         },
         "botocore": {
             "hashes": [
-                "sha256:0848c9cd2cbaca08f1f35cfa79f3e771c81c57b6e5a12531b18c209025445831",
-                "sha256:2d5611f72d41daacb63c43468619b13d6004ea1ddfa779511337e93fa1e57039"
+                "sha256:96ada177ad01161b8469861e209b82624390888443c45a97a49c2afa1a98eeb9",
+                "sha256:e348c14a5089fe43d5e953f82b9401c2ac4c42ceebd61d1bbaf49a224cb32dbc"
             ],
-            "version": "==1.8.7"
+            "version": "==1.8.8"
         },
         "click": {
             "hashes": [
@@ -110,19 +110,27 @@
             ],
             "version": "==1.0b10"
         },
+        "invoke": {
+            "hashes": [
+                "sha256:a90acf9fd9d863dba4545b369c4ca547de4ca76228ca52c78cf224e7eecce0e9",
+                "sha256:66434bf48dcffea232e8ada3a7e252cc10928871c46f39ece123c6a5753c0d0c",
+                "sha256:6c572a09849e1452ff65c674d4531a940366278194af86315e458f8457192274"
+            ],
+            "version": "==0.22.0"
+        },
         "ipykernel": {
             "hashes": [
-                "sha256:188c786b7d1786b10214aa64089e62bb2ee54dd2aa3d17db5bb39ffacf44b21d",
-                "sha256:afe2bebd8b47ac91801f13f26c228897ebd63793e7daa271921fdbc6dd719173",
-                "sha256:2e1825aca4e2585b5adb7953ea16e53f53a62159ed49952a564b1e23507205db"
+                "sha256:606579e1b30ce8eee154c016d6dd5305a77582de4c74c9397cea8d41dde2aa85",
+                "sha256:354986612a38f0555c43d5af2425e2a67506b63b313a0325e38904003b9d977b"
             ],
-            "version": "==4.6.1"
+            "version": "==4.7.0"
         },
         "ipython": {
             "hashes": [
                 "sha256:fcc6d46f08c3c4de7b15ae1c426e15be1b7932bcda9d83ce1a4304e8c1129df3",
                 "sha256:51c158a6c8b899898d1c91c6b51a34110196815cc905f9be0fa5878e19355608"
             ],
+            "markers": "python_version >= '3.3'",
             "version": "==6.2.1"
         },
         "ipython-genutils": {
