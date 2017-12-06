@@ -4,7 +4,8 @@ import os
 import jinja2
 import yaml
 import sys
-from invoke import run
+import tempfile
+import invoke
 import click
 import awss3 as cloudstorage
 
@@ -14,12 +15,35 @@ BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 def __build(diskimage, release):
 
     print(f'Creating "{diskimage}"..')
-    run(f'disk-image-create ubuntu-squashfs twist -t tgz -o {diskimage}',
-        env={
-             'DIB_RELEASE': release,
-             'ELEMENTS_PATH': os.path.join(
-                    os.path.dirname(__file__), 'add_elements')
-            })
+
+    sources_tmpl = jinja2.Environment(
+            loader=jinja2.FileSystemLoader(
+                os.path.dirname(__file__))).get_template('sources.list.jn2')
+
+    sources_rendered = sources_tmpl.render({'release': release})
+
+    with tempfile.NamedTemporaryFile(mode="w", delete=False) as outfile:
+        outfile.write(sources_rendered)
+        sources_filename = outfile.name
+
+    print(f'sources.list rendered to {sources_filename}')
+
+    cmd = (
+            "sudo -E bash -c '"
+            "disk-image-create ubuntu-squashfs twist"
+            f" -t tgz -o {diskimage}'"
+          )
+    try:
+        invoke.run(cmd,
+            env={
+                 'DIB_APT_SOURCES': sources_filename,
+                 'DIB_RELEASE': release,
+                 'ELEMENTS_PATH': os.path.join(
+                        os.path.dirname(__file__), 'add_elements')
+                })
+    finally:
+        os.unlink(sources_filename)
+
     print(f'Done creating "{diskimage}"')
 
 

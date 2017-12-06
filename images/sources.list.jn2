@@ -1,0 +1,14 @@
+deb http://de.archive.ubuntu.com/ubuntu {{ release }} main restricted universe multiverse
+#deb-src http://de.archive.ubuntu.com/ubuntu {{ release }} main restricted universe multiverse
+
+deb http://de.archive.ubuntu.com/ubuntu {{ release }}-updates main restricted universe multiverse
+#deb-src http://de.archive.ubuntu.com/ubuntu {{ release }}-updates main restricted universe multiverse
+
+deb http://de.archive.ubuntu.com/ubuntu {{ release }}-security main restricted universe multiverse
+#deb-src http://de.archive.ubuntu.com/ubuntu {{ release }}-security main restricted universe multiverse
+
+deb http://de.archive.ubuntu.com/ubuntu {{ release }}-backports main restricted universe multiverse
+#deb-src http://de.archive.ubuntu.com/ubuntu {{ release }}-backports main restricted universe multiverse
+
+# deb http://archive.canonical.com/ubuntu {{ release }} partner
+# deb-src http://archive.canonical.com/ubuntu {{ release }} partner
