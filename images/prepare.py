@@ -35,12 +35,12 @@ def __build(diskimage, release):
           )
     try:
         invoke.run(cmd,
-            env={
-                 'DIB_APT_SOURCES': sources_filename,
-                 'DIB_RELEASE': release,
-                 'ELEMENTS_PATH': os.path.join(
-                        os.path.dirname(__file__), 'add_elements')
-                })
+                   env={
+                        'DIB_APT_SOURCES': sources_filename,
+                        'DIB_RELEASE': release,
+                        'ELEMENTS_PATH': os.path.join(
+                                os.path.dirname(__file__), 'add_elements')
+                       })
     finally:
         os.unlink(sources_filename)
 
