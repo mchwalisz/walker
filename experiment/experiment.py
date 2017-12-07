@@ -4,9 +4,15 @@ import click
 import measurement
 import wifi
 
-from fabric import Connection
 from fabric import SerialGroup
 from pprint import pprint
+
+
+def select_one(param):
+    for i in range(len(param)):
+        cut = param[:]
+        sel = cut.pop(i)
+        yield sel, cut
 
 
 @click.group(
@@ -31,17 +37,19 @@ def scan():
 def run():
     hosts = ['nuc4', 'nuc10', 'nuc12']
     grp = SerialGroup(*hosts)
-    ap = Connection(hosts[0])
-    stations = SerialGroup(*hosts[1:])
     grp.run('uname -s -n -r')
     wifi.info(grp)
 
-    wifi.create_ap(ap, phy='03:00', ssid='exp1', channel=1)
-    measurement.iperf_server(ap)
-    for sta in stations:
-        wifi.connect(sta, phy='03:00', ssid='exp1')
-        print(f'AP: {ap.host} STA: {sta.host}')
-        print(measurement.iperf_client(sta, duration=5))
+    for ap, stations in select_one(grp):
+        wifi.create_ap(ap, phy='03:00', ssid='exp1', channel=1)
+        measurement.iperf_server(ap)
+        for sta in stations:
+            print(f'AP: {ap.host} STA: {sta.host}')
+            try:
+                wifi.connect(sta, phy='03:00', ssid='exp1')
+            except EnvironmentError as e:
+                continue
+            print(measurement.iperf_client(sta, duration=5))
 
 
 if __name__ == '__main__':
