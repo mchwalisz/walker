@@ -49,7 +49,7 @@ def __build(diskimage, release):
 
 def __upload(diskimage):
     print(f'Uploading {diskimage} to cloud storage..')
-    url = cloudstorage.upload(diskimage)
+    url = cloudstorage.upload(diskimage, 'static')
     print(f'Uploaded {diskimage} to cloud storage. URL: {url}')
     return(url)
 

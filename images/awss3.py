@@ -24,23 +24,32 @@ class AWSProgressPercentage(object):
             sys.stdout.flush()
 
 
-def upload(filepath):
+def upload(filepath, url_type='generated'):
 
     filesize = float(os.path.getsize(filepath))
+    key = os.path.basename(filepath)
 
-    s3.upload_file(filepath, bucket, os.path.basename(filepath),
-                   ExtraArgs={'ACL': 'public-read'},
+    if(url_type == 'generated'):
+        acl = 'private'
+        url = s3.generate_presigned_url(
+            ClientMethod='get_object',
+            Params={
+                'Bucket': bucket,
+                'Key': key
+            },
+            ExpiresIn=7200
+        )
+    elif(url_type == 'static'):
+        acl = 'public-read'
+        location = s3.get_bucket_location(Bucket=bucket)['LocationConstraint']
+        url = f'https://s3.{ location }.amazonaws.com/{ bucket }/{ key }'
+    else:
+        raise NotImplementedError()
+
+    s3.upload_file(filepath, bucket, key,
+                   ExtraArgs={'ACL': acl},
                    Callback=AWSProgressPercentage(filesize))
 
     sys.stdout.write('\n')
-
-    url = s3.generate_presigned_url(
-        ClientMethod='get_object',
-        Params={
-            'Bucket': bucket,
-            'Key': filepath
-        },
-        ExpiresIn=7200
-    )
 
     return url
