@@ -1,17 +1,12 @@
 #!/usr/bin/env python
 
 from datetime import datetime
-from itertools import product
 import click
 import pandas as pd
-import tqdm
-from fabric.api import *
-import fabfile as tasks
-
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-@click.group(context_settings=CONTEXT_SETTINGS)
+@click.group(
+    context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-v', '--verbose', count=True)
 @click.version_option('v0.1.0')
 def cli(verbose):
@@ -93,15 +88,11 @@ def network_scan(hosts, show_all):
 
     data = pd.DataFrame()
     ssid = 'twist-test'
-    t_ap = tqdm.tqdm(desc='AP',
-        total=sum(map(lambda h: len(phys[h]), phys)) * 2)
 
     for server in hosts:
         for phy, (channel, mode) in product(
                 phys[server],
                 zip([1, 48], ['g', 'a'])):
-            t_ap.set_postfix(ap=server, phy=phy, channel=channel)
-            t_ap.update(1)
             # Setup
             try:
                 execute(tasks.wifi.create_ap,
@@ -132,6 +123,12 @@ def network_scan(hosts, show_all):
                 types_=('managed',), hosts=[server])
     if not data.empty:
         data.to_csv('data/scan_{}.csv'.format(datetime.now().isoformat()))
+
+
+@cli.command(short_help="Experiment testing")
+def experiment():
+    hosts = ['nuc4', 'nuc10', 'nuc12']
+    print(hosts)
 
 
 if __name__ == '__main__':

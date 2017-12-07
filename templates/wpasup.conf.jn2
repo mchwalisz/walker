@@ -1,4 +1,4 @@
-ctrl_interface=/run/wpasup_{{ interface }}
+ctrl_interface=/run/wpasup-{{ interface }}
 update_config=1
 
 network={
