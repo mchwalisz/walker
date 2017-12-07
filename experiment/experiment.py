@@ -51,17 +51,23 @@ def run(duration):
     pbar_ap = tqdm(select_one(grp), total=len(grp))
     for ap, stations in pbar_ap:
         pbar_ap.set_description(f'AP {ap.host}')
+
+        # Create AP
         wifi.create_ap(ap, phy='03:00', ssid='exp1', channel=1)
         measurement.iperf_server(ap)
+
         pbar_sta = tqdm(stations)
         for sta in pbar_sta:
             pbar_sta.set_description(f'STA {sta.host}')
+
+            # Connect and measure
             try:
                 wifi.connect(sta, phy='03:00', ssid='exp1')
             except EnvironmentError as e:
                 continue
             result = measurement.iperf_client(sta, duration=duration)
 
+            # Collect measurement
             result_path = data_folder / f'{ap.host}-{sta.host}.json'
             with result_path.open('w') as f:
                 f.write(result.stdout)
