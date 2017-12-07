@@ -20,11 +20,13 @@ def run():
     hosts = ['nuc4', 'nuc10', 'nuc12']
     grp = SerialGroup(*hosts)
     ap = Connection(hosts[0])
+    stations = SerialGroup(*hosts[1:])
     grp.run('uname -s -n -r')
     wifi.info(grp)
-    # wifi.reload(ap)
+
     wifi.create_ap(ap, phy='03:00', ssid='exp1', channel=1)
-    wifi.connect(Connection(hosts[1]), phy='03:00', ssid='exp1')
+    for sta in stations:
+        wifi.connect(sta, phy='03:00', ssid='exp1')
 
 
 if __name__ == '__main__':
