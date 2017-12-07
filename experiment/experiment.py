@@ -2,10 +2,13 @@
 
 import click
 import measurement
+import time
 import wifi
 
 from fabric import SerialGroup
+from pathlib import Path
 from pprint import pprint
+from tqdm import tqdm
 
 
 def select_one(param):
@@ -39,17 +42,26 @@ def run():
     grp = SerialGroup(*hosts)
     grp.run('uname -s -n -r')
     wifi.info(grp)
+    data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
+    data_folder.mkdir()
 
-    for ap, stations in select_one(grp):
+    pbar_ap = tqdm(select_one(grp), total=len(grp))
+    for ap, stations in pbar_ap:
+        pbar_ap.set_description(f'AP {ap.host}')
         wifi.create_ap(ap, phy='03:00', ssid='exp1', channel=1)
         measurement.iperf_server(ap)
-        for sta in stations:
-            print(f'AP: {ap.host} STA: {sta.host}')
+        pbar_sta = tqdm(stations)
+        for sta in pbar_sta:
+            pbar_sta.set_description(f'STA {sta.host}')
             try:
                 wifi.connect(sta, phy='03:00', ssid='exp1')
             except EnvironmentError as e:
                 continue
-            print(measurement.iperf_client(sta, duration=5))
+            result = measurement.iperf_client(sta, duration=5)
+
+            result_path = data_folder / f'{ap.host}-{sta.host}.json'
+            with result_path.open('w') as f:
+                f.write(result.stdout)
 
 
 if __name__ == '__main__':

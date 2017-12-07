@@ -35,5 +35,7 @@ def iperf_client(
     else:
         conf = ''
     result = cnx.run(
-        f'iperf3 --client {ip} -t {duration} --json {conf} {extra_args}')
+        f'iperf3 --client {ip} -t {duration} --json {conf} {extra_args}',
+        hide=True,
+        warn=True)
     return result
