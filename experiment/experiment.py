@@ -37,7 +37,10 @@ def scan():
 
 
 @cli.command(short_help="Run experiment")
-def run():
+@click.option('--duration', '-d',
+    default=60,
+    help='Iperf3 measurement duration')
+def run(duration):
     hosts = ['nuc4', 'nuc10', 'nuc12']
     grp = SerialGroup(*hosts)
     grp.run('uname -s -n -r')
@@ -57,7 +60,7 @@ def run():
                 wifi.connect(sta, phy='03:00', ssid='exp1')
             except EnvironmentError as e:
                 continue
-            result = measurement.iperf_client(sta, duration=5)
+            result = measurement.iperf_client(sta, duration=duration)
 
             result_path = data_folder / f'{ap.host}-{sta.host}.json'
             with result_path.open('w') as f:
