@@ -1,7 +1,5 @@
 ---
 nuc:
-  - nuc4
   - nuc10
   - nuc12
-tplink:
-  - tplink01
+  - nuc13
