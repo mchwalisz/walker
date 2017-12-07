@@ -265,7 +265,16 @@ def connect(
         f' -f /tmp/wpasup-{interface}.log'
         f' -B'))
     cnx.sudo(f'ip addr add {ip}/24 dev {interface}')
-    time.sleep(2)
+    for _ in range(10):
+        time.sleep(1)
+        result = cnx.sudo(
+            f'wpa_cli -p /run/wpasup-{interface} status',
+            warn=True,
+            hide=True)
+        if 'wpa_state=COMPLETED' in result.stdout:
+            break
+    else:
+        raise EnvironmentError(f'Could not connect to {ssid}')
     return WiFiDev(phy, interface)
 
 
