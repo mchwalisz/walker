@@ -14,7 +14,7 @@ ieee80211n=1
 {# ht_capab=[HT40+][LDPC][SHORT-GI-20][SHORT-GI-40][TX-STBC][RX-STBC1][DSSS_CCK-40] #}
 
 interface={{ interface }}
-ctrl_interface=/var/run/hostapd
+ctrl_interface=/run/hostapd-{{interface}}
 disassoc_low_ack=1
 preamble=1
 wmm_enabled=1

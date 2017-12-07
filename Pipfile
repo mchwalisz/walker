@@ -14,10 +14,13 @@ jupyter = "*"
 pandas = "*"
 "boto3" = "*"
 diskimage-builder = "*"
+ansible = "*"
+invoke = "*"
 
 
 [dev-packages]
 
+bpython = "*"
 
 
 [requires]
