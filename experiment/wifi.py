@@ -17,9 +17,15 @@ WiFiDev = namedtuple('WiFiDev', 'phy, interface')
 
 
 def phy_resolve(cnx, phy=None):
-    """Resolves physical interface name.
+    """Resolves physical device name.
 
-    `phy` can be either physical interface name, or a PCI bus name.
+    `phy` can be either physical device name, or a PCI bus name.
+    If `phy` is None it will return list of all devices
+
+    Args:
+        cnx (Connection): fabric connection context
+        phy (str): Physical device. If not None it will force create new
+            interface on this device.
     """
     result = cnx.run('ls -alh /sys/class/ieee80211/', hide=True)
     phy_all = []
@@ -38,7 +44,14 @@ def phy_resolve(cnx, phy=None):
 
 
 def ifaces(cnx):
-    """Generator for all wireless interfaces on the system"""
+    """Generator for all wireless interfaces on the system
+
+    Args:
+        cnx (Connection): fabric connection context
+
+    Returns:
+        Generator of WiFiDev: information about all devices
+    """
     for line in cnx.run('iw dev', hide=True).stdout.splitlines():
         line = line.strip()
         if line.startswith('Interface'):
@@ -49,7 +62,7 @@ def ifaces(cnx):
             yield WiFiDev(phy, iface)
 
 
-def phy_check(cnx, phy=None, interface=None, suffix='w'):
+def phy_check(cnx, phy=None, interface=None, suffix='_w'):
     """Resolves physical and device interface mess.
 
     `phy` can be either physical interface name, or a PCI bus name.
@@ -58,6 +71,16 @@ def phy_check(cnx, phy=None, interface=None, suffix='w'):
 
     If `phy` is None, then interface must be given and must exist. It will
     resolve to which physical device given `interface` belongs.
+
+    Args:
+        cnx (Connection): fabric connection context
+        phy (str): Physical device. If not None it will force create new
+            interface on this device.
+        interface (str): Wi-Fi interface
+        suffix (str): suffix to add if generating interface
+
+    Returns:
+        WiFiDev: information about used device
     """
     if phy is not None:
         phy = phy_resolve(cnx, phy)
@@ -84,7 +107,14 @@ def phy_check(cnx, phy=None, interface=None, suffix='w'):
 
 
 def phy_clean(cnx, phy):
-    """Removes all interfaces for given `phy` device."""
+    """Removes all interfaces for given `phy` device.
+
+
+    Args:
+        cnx (Connection): fabric connection context
+        phy (str): Physical device. If not None it will force create new
+            interface on this device.
+    """
     phy = phy_resolve(cnx, phy)
     for dev in ifaces(cnx):
         if phy == dev.phy:
@@ -94,7 +124,11 @@ def phy_clean(cnx, phy):
 
 
 def info(cnx):
-    """Print information about all devices"""
+    """Print information about all devices
+
+    Args:
+        cnx (Connection): fabric connection context
+    """
     # cnx.run('lshw -C network')
     results = cnx.run('lspci -nnk | grep "Wireless" -A2', hide=True)
     for connection, result in results.items():
@@ -103,7 +137,11 @@ def info(cnx):
 
 
 def reload(cnx):
-    """Reload kernel modules for `ath9k`"""
+    """Reload kernel modules for `ath9k`
+
+    Args:
+        cnx (Connection): fabric connection context
+    """
     custom_modules = [
         'cfg80211',
         'mac80211',
@@ -131,6 +169,7 @@ def create_ap(
     """Creates Wi-Fi AP with hostapd.
 
     Args:
+        cnx (Connection): fabric connection context
         phy (str): Physical device. Either name or PCI bus
         interface (str): Wi-Fi interface
         ssid (str): Network name
@@ -183,10 +222,10 @@ def connect(
     """Task to connect a node to an AP.
 
     Args:
-        interface (str): Wi-Fi interface
+        cnx (Connection): fabric connection context
         phy (str): Physical device. If not None it will force create new
             interface on this device.
-        phy_irq (str): Uniquely identify physical device by interrupt handler.
+        interface (str): Wi-Fi interface
         ssid (str): Network name
         psk (str): Password
         ip (str): IP address of the AP
@@ -240,6 +279,9 @@ def scan(
         phy (str): Physical device. If not None it will force create new
             interface on this device.
         interface (str): Wi-Fi interface
+
+    Returns:
+        list of networks
     """
     phy, interface = phy_check(cnx, phy, interface, '_scan')
     if_up_check = ' UP ' in cnx.sudo(
