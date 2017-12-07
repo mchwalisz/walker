@@ -18,4 +18,7 @@
     command: iw reg set DE
     become: yes
 
-
+  - name: Unblock wifi
+    command: rfkill unblock wifi
+    become: yes
+    failed_when: false

@@ -136,7 +136,6 @@ def create_ap(
         WiFiDev: information about used device
     """
     phy, interface = phy_check(cnx, phy, interface, '_ap')
-    cnx.sudo('rfkill unblock wifi', warn=True, hide=True)
 
     result = cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
     if result:
@@ -189,7 +188,6 @@ def connect(
         WiFiDev: information about used device
     """
     phy, interface = phy_check(cnx, phy, interface, '_sta')
-    cnx.sudo('rfkill unblock wifi', warn=True, hide=True)
 
     if ip is None:
         ip_hash = hash(cnx.host) % 2**8
