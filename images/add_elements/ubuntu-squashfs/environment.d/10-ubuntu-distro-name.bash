@@ -1,2 +1,2 @@
 export DISTRO_NAME=ubuntu
-export DIB_RELEASE=${DIB_RELEASE:-bionic}
+export DIB_RELEASE=${DIB_RELEASE:-artful}
