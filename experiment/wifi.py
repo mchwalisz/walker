@@ -265,6 +265,7 @@ def connect(
         f' -f /tmp/wpasup-{interface}.log'
         f' -B'))
     cnx.sudo(f'ip addr add {ip}/24 dev {interface}')
+    time.sleep(2)
     return WiFiDev(phy, interface)
 
 

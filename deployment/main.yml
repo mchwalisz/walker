@@ -12,6 +12,7 @@
      - python3-pip
      - iperf3
      - netperf
+     - dtach
     become: yes
 
   - name: Set regulatory domain to DE
