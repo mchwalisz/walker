@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import click
+import wifi
+
 from fabric import Connection
 from fabric import SerialGroup
-import wifi
+from pprint import pprint
 
 
 @click.group(
@@ -26,7 +28,8 @@ def run():
 
     wifi.create_ap(ap, phy='03:00', ssid='exp1', channel=1)
     for sta in stations:
-        wifi.connect(sta, phy='03:00', ssid='exp1')
+        # wifi.connect(sta, phy='03:00', ssid='exp1')
+        pprint(wifi.scan(sta, phy='03:00'))
 
 
 if __name__ == '__main__':

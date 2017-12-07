@@ -16,23 +16,30 @@ jinja_env = Environment(loader=FileSystemLoader([template_path]))
 WiFiDev = namedtuple('WiFiDev', 'phy, interface')
 
 
-def phy_resolve(cnx, phy):
+def phy_resolve(cnx, phy=None):
     """Resolves physical interface name.
 
     `phy` can be either physical interface name, or a PCI bus name.
     """
     result = cnx.run('ls -alh /sys/class/ieee80211/', hide=True)
-    for line in result.stdout.split('\n'):
-        if phy in line:
+    phy_all = []
+    for line in result.stdout.splitlines():
+        if (phy is None) and line.startswith('l'):
+            phy_dev = line.strip().split('/')[-1]
+            phy_all.append(phy_dev)
+        elif phy in line:
             phy_dev = line.strip().split('/')[-1]
             return phy_dev
     else:
-        raise AttributeError('Could not find device')
+        if phy is None:
+            phy_all
+        else:
+            raise AttributeError('Could not find device')
 
 
 def ifaces(cnx):
     """Generator for all wireless interfaces on the system"""
-    for line in cnx.run('iw dev', hide=True).stdout.split('\n'):
+    for line in cnx.run('iw dev', hide=True).stdout.splitlines():
         line = line.strip()
         if line.startswith('Interface'):
             iface = line.split(' ')[-1]
@@ -52,7 +59,7 @@ def phy_check(cnx, phy=None, interface=None, suffix='w'):
     If `phy` is None, then interface must be given and must exist. It will
     resolve to which physical device given `interface` belongs.
     """
-    if phy:
+    if phy is not None:
         phy = phy_resolve(cnx, phy)
         if interface is None:
             interface = phy + suffix
@@ -220,3 +227,53 @@ def connect(
         f' -B'))
     cnx.sudo(f'ip addr add {ip}/24 dev {interface}')
     return WiFiDev(phy, interface)
+
+
+def scan(
+        cnx: Connection,
+        phy: Optional[str] = None,
+        interface: Optional[str] = None):
+    """Returns wireless scan of networks from given interface
+
+    Args:
+        cnx (Connection): fabric connection context
+        phy (str): Physical device. If not None it will force create new
+            interface on this device.
+        interface (str): Wi-Fi interface
+    """
+    phy, interface = phy_check(cnx, phy, interface, '_scan')
+    if_up_check = ' UP ' in cnx.sudo(
+        f'ip link show {interface}', hide=True).stdout
+    if not if_up_check:
+        cnx.sudo(f'ip link set {interface} up', hide=True)
+
+    scan_result = cnx.sudo(f'iw dev {interface} scan', hide=True)
+
+    networks = []
+    curr = None
+    for line in scan_result.stdout.splitlines():
+        line = line.strip()
+        match = re.search(
+            r'BSS (?P<bssid>([0-9a-f]{2}:?){6})\(on (?P<dev>\w*)\)',
+            line)
+        if match:
+            if (curr is not None) and ('ssid' in curr):
+                networks.append(curr)
+            curr = dict(
+                bssid=match.group('bssid'),
+                sta_dev=match.group('dev'),
+                sta=cnx.host)
+        sgr = [
+            ('freq', r'freq: (\d*)'),
+            ('signal', r'signal: (.*)'),
+            ('ssid', r'SSID: (.*)'),
+        ]
+        for name, pattern in sgr:
+            match = re.search(pattern, line)
+            if match:
+                curr[name] = match.group(1)
+
+    if not if_up_check:
+        cnx.sudo(f'ip link set {interface} down', hide=True)
+
+    return networks
