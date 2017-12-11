@@ -55,12 +55,13 @@ def __upload(diskimage):
 
 
 def __render_rspec(url):
-    with open(os.path.join(BASE_PATH, 'rspecs', 'nodes.yml'), 'r') as stream:
+    with open(os.path.join(BASE_PATH, 'node_selection', 'hosts'),
+              'r') as stream:
         node_spec = yaml.load(stream)
 
     nodes = list()
     for node_type in node_spec:
-        for node_name in node_spec[node_type]:
+        for node_name in node_spec[node_type]['hosts']:
             node = {
                     'name': node_name,
                     'type': node_type,
@@ -70,11 +71,12 @@ def __render_rspec(url):
 
     rspec = jinja2.Environment(
             loader=jinja2.FileSystemLoader(
-                os.path.join(BASE_PATH, 'rspecs'))).get_template('rspec.jn2')
+                os.path.join(
+                    BASE_PATH, 'node_selection'))).get_template('rspec.jn2')
 
     output = rspec.render({'nodes': nodes})
 
-    rspec_path = os.path.join(BASE_PATH, 'rspecs', 'rendered.rspec')
+    rspec_path = os.path.join(BASE_PATH, 'node_selection', 'rendered.rspec')
     with open(rspec_path, 'w') as f:
         f.write(output)
 
