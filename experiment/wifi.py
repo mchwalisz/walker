@@ -106,21 +106,25 @@ def phy_check(cnx, phy=None, interface=None, suffix='_w'):
     return WiFiDev(phy, interface)
 
 
-def phy_clean(cnx, phy):
-    """Removes all interfaces for given `phy` device.
+def phy_clean(cnx, phy=None):
+    """Removes all interfaces for given physical device.
 
 
     Args:
         cnx (Connection): fabric connection context
-        phy (str): Physical device. If not None it will force create new
-            interface on this device.
+        phy (str): Physical device.
     """
-    phy = phy_resolve(cnx, phy)
-    for dev in ifaces(cnx):
-        if phy == dev.phy:
-            cnx.sudo(f'iw {dev.interface} del')
+    if phy is None:
+        phy = ''
+    else:
+        phy = phy_resolve(cnx, phy)
+
     cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
     cnx.sudo(f'pkill -f wpa_supplicant.*{phy}', warn=True)
+
+    for dev in ifaces(cnx):
+        if not phy or (phy == dev.phy):
+            cnx.sudo(f'iw {dev.interface} del')
 
 
 def info(cnx):

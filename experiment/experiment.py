@@ -4,11 +4,15 @@ import click
 import measurement
 import time
 import wifi
+import yaml
 
 from fabric import SerialGroup
+from fabric import Connection
 from pathlib import Path
 from pprint import pprint
 from tqdm import tqdm
+
+BASE_PATH = Path(__file__).parent / '..'
 
 
 def select_one(param):
@@ -41,28 +45,32 @@ def scan():
     default=60,
     help='Iperf3 measurement duration')
 def run(duration):
-    hosts = ['nuc4', 'nuc10', 'nuc12']
+    with (BASE_PATH / 'node_selection' / 'hosts').open('r') as stream:
+        config = yaml.load(stream)
+    hosts = list(config['nuc']['hosts'].keys())
+    phy = '03:00'
     grp = SerialGroup(*hosts)
     grp.run('uname -s -n -r')
     wifi.info(grp)
     data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
     data_folder.mkdir()
+    for host in grp:
+        wifi.phy_clean(host)
 
     pbar_ap = tqdm(select_one(grp), total=len(grp))
     for ap, stations in pbar_ap:
         pbar_ap.set_description(f'AP {ap.host}')
 
         # Create AP
-        wifi.create_ap(ap, phy='03:00', ssid='exp1', channel=1)
+        wifi.create_ap(ap, phy=phy, ssid='exp1', channel=11)
         measurement.iperf_server(ap)
 
         pbar_sta = tqdm(stations)
         for sta in pbar_sta:
             pbar_sta.set_description(f'STA {sta.host}')
-
             # Connect and measure
             try:
-                wifi.connect(sta, phy='03:00', ssid='exp1')
+                wifi.connect(sta, phy=phy, ssid='exp1')
             except EnvironmentError as e:
                 continue
             result = measurement.iperf_client(sta, duration=duration)
@@ -71,6 +79,8 @@ def run(duration):
             result_path = data_folder / f'{ap.host}-{sta.host}.json'
             with result_path.open('w') as f:
                 f.write(result.stdout)
+
+            wifi.phy_clean(sta, phy=phy)
 
 
 if __name__ == '__main__':
