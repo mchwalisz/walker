@@ -1,6 +1,6 @@
 #!/usr/bin/env python
-
 import os
+import pathlib
 import jinja2
 import yaml
 import sys
@@ -9,7 +9,7 @@ import invoke
 import click
 import awss3 as cloudstorage
 
-BASE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
+BASE_PATH = pathlib.Path(__file__).absolute().parents[1]
 
 
 def __build(diskimage, release):
@@ -18,7 +18,8 @@ def __build(diskimage, release):
 
     sources_tmpl = jinja2.Environment(
             loader=jinja2.FileSystemLoader(
-                os.path.dirname(__file__))).get_template('sources.list.jn2')
+                str(pathlib.Path(__file__).parents[0]))).get_template(
+                    'sources.list.jn2')
 
     sources_rendered = sources_tmpl.render({'release': release})
 
@@ -38,8 +39,8 @@ def __build(diskimage, release):
                    env={
                         'DIB_APT_SOURCES': sources_filename,
                         'DIB_RELEASE': release,
-                        'ELEMENTS_PATH': os.path.join(
-                                os.path.dirname(__file__), 'add_elements')
+                        'ELEMENTS_PATH': pathlib.Path(__file__)
+                        .absolute().parents[0] / 'add_elements'
                        })
     finally:
         os.unlink(sources_filename)
@@ -55,8 +56,7 @@ def __upload(diskimage):
 
 
 def __render_rspec(url):
-    with open(os.path.join(BASE_PATH, 'node_selection', 'hosts'),
-              'r') as stream:
+    with open(BASE_PATH / 'node_selection' / 'hosts', 'r') as stream:
         node_spec = yaml.load(stream)
 
     nodes = list()
@@ -71,12 +71,11 @@ def __render_rspec(url):
 
     rspec = jinja2.Environment(
             loader=jinja2.FileSystemLoader(
-                os.path.join(
-                    BASE_PATH, 'node_selection'))).get_template('rspec.jn2')
+                str(BASE_PATH / 'node_selection'))).get_template('rspec.jn2')
 
     output = rspec.render({'nodes': nodes})
 
-    rspec_path = os.path.join(BASE_PATH, 'node_selection', 'rendered.rspec')
+    rspec_path = BASE_PATH / 'node_selection' / 'rendered.rspec'
     with open(rspec_path, 'w') as f:
         f.write(output)
 
