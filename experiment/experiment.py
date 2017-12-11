@@ -40,6 +40,29 @@ def scan():
         pprint(wifi.scan(sta, phy='03:00'))
 
 
+@cli.command(short_help="Run short test between two nodes")
+@click.option('--duration', '-d',
+    default=60,
+    help='Iperf3 measurement duration')
+def short(duration):
+    ap = Connection('nuc4')
+    sta = Connection('nuc5')
+    data_folder = Path.cwd() / 'data' / 'short'
+    if not data_folder.exists():
+        data_folder.mkdir(parents=True)
+
+    wifi.create_ap(ap, phy='02:00', ssid='exp1', channel=11)
+    measurement.iperf_server(ap)
+
+    wifi.connect(sta, phy='02:00', ssid='exp1')
+    result = measurement.iperf_client(sta, duration=duration)
+
+    result_path = data_folder.joinpath(
+        f'{time.strftime("%Y-%m-%d-%H%M%S")}-{ap.host}-{sta.host}.json')
+    with result_path.open('w') as f:
+        f.write(result.stdout)
+
+
 @cli.command(short_help="Run experiment")
 @click.option('--duration', '-d',
     default=60,
