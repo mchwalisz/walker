@@ -1,0 +1,110 @@
+#!/usr/local/bin/dib-python
+
+import re
+import sys
+import logging
+import pathlib
+import tempfile
+import urllib.request
+import os
+import subprocess
+from html.parser import HTMLParser
+
+logging.basicConfig(level=logging.DEBUG)
+
+
+class MyHTMLParser(HTMLParser):
+    def __init__(self):
+        super(MyHTMLParser, self).__init__()
+        self.debs = list()
+
+    def handle_data(self, data):
+        if(data.endswith('.deb')):
+            self.debs.append(data)
+
+
+def crawl_debs(url):
+    logging.info('Crawling URL: {:s}'.format(url))
+
+    parser = MyHTMLParser()
+    with urllib.request.urlopen(url) as response:
+        parser.feed(response.read().decode("utf-8"))
+
+    if(not parser.debs):
+        raise Exception("No deb packages found under URL {:s}".format(url))
+    return parser.debs
+
+
+def get_links(kversion, arch):
+    base_url = 'http://kernel.ubuntu.com/~kernel-ppa/mainline/v{:s}'.format(
+        kversion)
+
+    headers_all_re = re.compile(
+        'linux-headers-{:s}(.0){{0,1}}-[0-9]+.+_all.deb'.format(
+            kversion, arch))
+    headers_arch_re = re.compile(
+        'linux-headers-{:s}(.0){{0,1}}.+-generic_.+_{:s}.deb'.format(
+            kversion, arch))
+    image_re = re.compile(
+        'linux-image-{:s}(.0){{0,1}}.+-generic_.+_{:s}.deb'.format(
+            kversion, arch))
+
+    links = dict()
+
+    for link in crawl_debs(base_url):
+        if headers_all_re.match(link):
+            links['headers_all'] = {'url': '/'.join((base_url, link)),
+                                    'name': link}
+            logging.debug('Matched headers package: {:s}'.format(link))
+        elif headers_arch_re.match(link):
+            links['headers_arch'] = {'url': '/'.join((base_url, link)),
+                                     'name': link}
+            logging.debug('Matched headers package: {:s}'.format(link))
+        elif image_re.match(link):
+            links['image'] = {'url': '/'.join((base_url, link)), 'name': link}
+            logging.debug('Matched image package: {:s}'.format(link))
+
+    if (
+            'headers_all' not in links.keys() or
+            'image' not in links.keys() or
+            'headers_arch' not in links.keys()
+       ):
+        raise Exception('Could not find links')
+    return links
+
+
+def download(link, target_file):
+    logging.info('Downloading from: {:s}'.format(link))
+    urllib.request.urlretrieve(link, str(target_file))
+    logging.debug('Download to {:s} done'.format(str(target_file)))
+
+
+def dpkg_install(filename):
+    ret = subprocess.run(["dpkg", "-i", filename])
+    if(ret.returncode == 1):
+        subprocess.run(["apt-get", "-f", "--force-yes", "--yes", "install"])
+        ret = subprocess.run(["dpkg", "-i", filename])
+        if(ret.returncode > 0):
+            raise Exception("Installation failed")
+    elif(ret.returncode > 1):
+        raise Exception("Installation failed")
+
+
+if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print("Usage: crawl.py [ARCH] [VERSION1,VERSION2,...]")
+        raise Exception("Wrong number of cmdline args")
+
+    versions = sys.argv[2].split(',')
+    for kversion in versions:
+        links = get_links(kversion, sys.argv[1])
+        for pkg_id in ['headers_all', 'headers_arch', 'image']:
+            deb_filename = tempfile.mkstemp(suffix='.deb')[1]
+            try:
+                download(links[pkg_id]['url'], deb_filename)
+                dpkg_install(deb_filename)
+            except Exception:
+                raise
+            finally:
+                pass
+                os.unlink(deb_filename)
