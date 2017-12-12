@@ -18,6 +18,7 @@ def iperf_client(
         ip: str = '10.1.1.1',
         traffic: str = 'udp',
         duration: int = 20,
+        title: str = None,
         extra_args: str = ''):
     """Starts iperf3 client
 
@@ -34,6 +35,7 @@ def iperf_client(
         conf = '-u -b 100m'
     else:
         conf = ''
+    conf = conf + f' --title "{title}"' if title else conf
     result = cnx.run(
         (f'iperf3 --client {ip} -t {duration}'
         f' --json --get-server-output'
