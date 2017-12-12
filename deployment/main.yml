@@ -23,3 +23,11 @@
     command: rfkill unblock wifi
     become: yes
     failed_when: false
+
+  - name: Check wireless devices
+    raw: iw dev | grep Interface
+    changed_when: false
+    register: wdevs
+
+  - name: Show wireless devices
+    debug: var=wdevs.stdout_lines
