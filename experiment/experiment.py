@@ -5,6 +5,7 @@ import measurement
 import time
 import wifi
 import yaml
+import logging
 
 from fabric import SerialGroup
 from fabric import Connection
@@ -13,6 +14,7 @@ from pprint import pprint
 from tqdm import tqdm
 
 BASE_PATH = Path(__file__).parent / '..'
+log = logging.getLogger('exp')
 
 
 def select_one(param):
@@ -24,11 +26,28 @@ def select_one(param):
 
 @click.group(
     context_settings=dict(help_option_names=['-h', '--help']))
-@click.option('-v', '--verbose', count=True)
+@click.option('-v', '--verbose', count=True,
+    help='Increase log verbosity level (up to 4)')
 @click.version_option('v0.1.0')
 def cli(verbose):
-    # click.echo('Verbosity: %s' % verbose)
-    pass
+    level = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
+    if verbose < 3:
+        log.setLevel(level[verbose])
+        # ch = logging.StreamHandler()
+        # ch.setLevel(level[verbose])
+        # formatter = logging.Formatter(
+        #     '%(asctime)s:%(name)s:%(levelname)s:%(message)s')
+        # ch.setFormatter(formatter)
+        # log.addHandler(ch)
+        verbose = 0
+    elif verbose == 3:
+        log.setLevel(level[2])
+        verbose = 1
+    else:
+        verbose = 2
+    logging.basicConfig(
+        format='%(asctime)s:%(name)s:%(levelname)s:%(message)s',
+        level=level[verbose])
 
 
 @cli.command(short_help="Scan for networks")
@@ -51,12 +70,16 @@ def short(duration):
     if not data_folder.exists():
         data_folder.mkdir(parents=True)
 
+    log.info(f'Create AP on {ap.host}')
     wifi.create_ap(ap, phy='02:00', ssid='exp1', channel=11)
     measurement.iperf_server(ap)
 
+    log.info(f'Connect to AP from {sta.host}')
     wifi.connect(sta, phy='02:00', ssid='exp1')
+    log.info(f'Measure for {duration} sec')
     result = measurement.iperf_client(sta, duration=duration)
 
+    log.info(f'Collect measurements')
     result_path = data_folder.joinpath(
         f'{time.strftime("%Y-%m-%d-%H%M%S")}-{ap.host}-{sta.host}.json')
     with result_path.open('w') as f:
