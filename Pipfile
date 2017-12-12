@@ -17,6 +17,8 @@ diskimage-builder = "*"
 ansible = "*"
 invoke = "*"
 tqdm = "*"
+seaborn = "*"
+matplotlib = "*"
 
 
 [dev-packages]
