@@ -63,9 +63,19 @@ def scan():
 @click.option('--duration', '-d',
     default=60,
     help='Iperf3 measurement duration')
-def short(duration):
-    ap = Connection('nuc4')
-    sta = Connection('nuc5')
+@click.option('--access-point', '-a',
+    default='nuc4',
+    help='Host to act as Access Point and iperf3 server')
+@click.option('--client', '-c',
+    default='nuc10',
+    help='Host to act as Wi-Fi and iperf3 client')
+def short(duration, access_point, client):
+    ap = Connection(access_point)
+    sta = Connection(client)
+    for host in [ap, sta]:
+        wifi.phy_clean(host)
+        measurement.iperf_kill(host)
+
     data_folder = Path.cwd() / 'data' / 'short'
     if not data_folder.exists():
         data_folder.mkdir(parents=True)
@@ -79,11 +89,15 @@ def short(duration):
     log.info(f'Measure for {duration} sec')
     result = measurement.iperf_client(sta, duration=duration)
 
-    log.info(f'Collect measurements')
     result_path = data_folder.joinpath(
         f'{time.strftime("%Y-%m-%d-%H%M%S")}-{ap.host}-{sta.host}.json')
+    log.info(f'Collect measurements to {result_path}')
     with result_path.open('w') as f:
         f.write(result.stdout)
+
+    for host in [ap, sta]:
+        wifi.phy_clean(host)
+        measurement.iperf_kill(host)
 
 
 @cli.command(short_help="Run experiment")
@@ -100,8 +114,10 @@ def run(duration):
     wifi.info(grp)
     data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
     data_folder.mkdir()
+    log.info(f'Storing measurements in {data_folder}')
     for host in grp:
         wifi.phy_clean(host)
+        measurement.iperf_kill(host)
 
     pbar_ap = tqdm(select_one(grp), total=len(grp))
     for ap, stations in pbar_ap:
@@ -118,6 +134,8 @@ def run(duration):
             try:
                 wifi.connect(sta, phy=phy, ssid='exp1')
             except EnvironmentError as e:
+                wifi.phy_clean(sta, phy=phy)
+                log.warning(f'Could not connect {sta.host} to {ap.host}')
                 continue
             result = measurement.iperf_client(sta, duration=duration)
 
@@ -127,6 +145,9 @@ def run(duration):
                 f.write(result.stdout)
 
             wifi.phy_clean(sta, phy=phy)
+
+        wifi.phy_clean(ap, phy=phy)
+        measurement.iperf_kill(ap)
 
 
 if __name__ == '__main__':

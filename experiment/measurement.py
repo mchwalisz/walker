@@ -41,3 +41,13 @@ def iperf_client(
         hide=True,
         warn=True)
     return result
+
+
+def iperf_kill(
+        cnx: Connection):
+    """Starts iperf3 server in background.
+
+    Args:
+        cnx (Connection): Fabric connection context
+    """
+    cnx.run('pkill iperf3', warn=True, hide=True)
