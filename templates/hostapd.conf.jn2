@@ -1,3 +1,4 @@
+{# https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf #}
 driver=nl80211
 logger_syslog=127
 logger_syslog_level=2
@@ -11,7 +12,7 @@ channel={{ channel }}
 
 ieee80211n=1
 
-{# ht_capab=[TX-STBC][RX-STBC1] #}
+{# ht_capab=[TX-STBC][RX-STBC1][SHORT-GI-20] #}
 
 interface={{ interface }}
 ctrl_interface=/run/hostapd-{{interface}}

@@ -63,10 +63,16 @@ def scan():
 @click.option('--client', '-c',
     default='nuc10',
     help='Host to act as Wi-Fi and iperf3 client')
-def short(duration, access_point, client):
+@click.option('--traffic', '-t',
+    type=click.Choice(['udp', 'tcp']),
+    default='udp',
+    help='Choose traffic type')
+def short(duration, access_point, client, traffic):
     ap = Connection(access_point)
     sta = Connection(client)
     phy = '02:00'
+    channel = 11
+
     for host in [ap, sta]:
         wifi.phy_clean(host)
         measurement.iperf_kill(host)
@@ -76,7 +82,7 @@ def short(duration, access_point, client):
         data_folder.mkdir(parents=True)
 
     log.info(f'Create AP on {ap.host}')
-    wifi.create_ap(ap, phy=phy, ssid='exp1', channel=11)
+    wifi.create_ap(ap, phy=phy, ssid='exp1', channel=channel)
     measurement.iperf_server(ap)
 
     log.info(f'Connect to AP from {sta.host}')
@@ -84,7 +90,8 @@ def short(duration, access_point, client):
     log.info(f'Measure for {duration} sec')
     result = measurement.iperf_client(sta,
         duration=duration,
-        title=f'AP {ap.host} STA {sta.host} using phy {phy}')
+        traffic=traffic,
+        title=f'ap:{ap.host},sta:{sta.host},phy:{phy},channel:{channel}')
 
     result_path = data_folder.joinpath(
         f'{time.strftime("%Y-%m-%d-%H%M%S")}-{ap.host}-{sta.host}.json')
