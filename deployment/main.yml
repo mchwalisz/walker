@@ -36,7 +36,7 @@
     failed_when: false
 
   - name: Check wireless devices
-    raw: iw dev | grep Interface
+    raw: iw phy | grep Wiphy
     changed_when: false
     register: wdevs
 
