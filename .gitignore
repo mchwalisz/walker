@@ -101,3 +101,9 @@ ENV/
 .mypy_cache/
 
 data/
+
+# Ansible
+*.retry
+
+*.tgz
+image.d/

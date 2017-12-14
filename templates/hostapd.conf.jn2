@@ -1,3 +1,4 @@
+{# https://w1.fi/cgit/hostap/plain/hostapd/hostapd.conf #}
 driver=nl80211
 logger_syslog=127
 logger_syslog_level=2
@@ -10,11 +11,11 @@ hw_mode={{ hw_mode }}
 channel={{ channel }}
 
 ieee80211n=1
-{# ht_coex=0 #}
-{# ht_capab=[HT40+][LDPC][SHORT-GI-20][SHORT-GI-40][TX-STBC][RX-STBC1][DSSS_CCK-40] #}
+
+{# ht_capab=[TX-STBC][RX-STBC1][SHORT-GI-20] #}
 
 interface={{ interface }}
-ctrl_interface=/var/run/hostapd
+ctrl_interface=/run/hostapd-{{interface}}
 disassoc_low_ack=1
 preamble=1
 wmm_enabled=1

@@ -1,4 +1,4 @@
-# Wi-Fi channel measurement experiment
+# WaLKER - Wifi Linux Kernel ExpeRiment
 
 Perform a full mesh measurements of the interference and throughput between all WiFi nodes deployed in TWIST testbed in TKN building.
 

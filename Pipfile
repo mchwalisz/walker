@@ -12,10 +12,19 @@ click = "*"
 "jinja2" = "*"
 jupyter = "*"
 pandas = "*"
+"boto3" = "*"
+diskimage-builder = "*"
+ansible = "*"
+invoke = "*"
+tqdm = "*"
+seaborn = "*"
+matplotlib = "*"
 
 
 [dev-packages]
 
+bpython = "*"
+bumpversion = "*"
 
 
 [requires]
