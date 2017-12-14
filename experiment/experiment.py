@@ -2,6 +2,7 @@
 
 import click
 import measurement
+import kernel
 import time
 import wifi
 import yaml
@@ -160,6 +161,17 @@ def run(duration):
 
         wifi.phy_clean(ap, phy=phy)
         measurement.iperf_kill(ap)
+
+
+@cli.command(short_help="Run full experiment with switching kernels")
+@click.option('--duration', '-d',
+    default=60,
+    help='Iperf3 measurement duration')
+def full(duration):
+    nuc = Connection('nuc11')
+    possible_kernels = kernel.kernels(nuc)
+    print(possible_kernels)
+    kernel.switch(nuc, possible_kernels[-2].release)
 
 
 if __name__ == '__main__':
