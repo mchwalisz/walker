@@ -12,6 +12,7 @@
       - "--no-motd"
       - "--exclude=.git"
       - "--exclude=data"
+      - "--exclude=images"
 
   - name: Install required packages
     apt: name="{{ item }}" state=present

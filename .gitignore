@@ -104,3 +104,6 @@ data/
 
 # Ansible
 *.retry
+
+*.tgz
+image.d/
