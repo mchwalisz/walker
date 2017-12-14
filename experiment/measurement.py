@@ -32,7 +32,7 @@ def iperf_client(
     cnx.run('pkill iperf3', warn=True, hide=True)
 
     if traffic.lower() == 'udp':
-        conf = '-u -b 100m'
+        conf = '-u -b 200m'
     else:
         conf = ''
     conf = conf + f' --title "{title}"' if title else conf
