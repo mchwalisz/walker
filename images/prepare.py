@@ -12,7 +12,7 @@ import awss3 as cloudstorage
 BASE_PATH = pathlib.Path(__file__).absolute().parents[1]
 
 
-def __build(diskimage, release):
+def __build(diskimage, release, kernel):
 
     print(f'Creating "{diskimage}"..')
 
@@ -31,12 +31,13 @@ def __build(diskimage, release):
 
     cmd = (
             "sudo -E bash -c '"
-            "disk-image-create ubuntu-squashfs twist"
+            "disk-image-create ubuntu-squashfs twist mainline-kernel"
             f" -t tgz -o {diskimage}'"
           )
     try:
         invoke.run(cmd,
                    env={
+                        'DIB_KERNEL_VERSIONS': ','.join(kernel),
                         'DIB_APT_SOURCES': sources_filename,
                         'DIB_RELEASE': release,
                         'ELEMENTS_PATH': pathlib.Path(__file__)
@@ -83,24 +84,27 @@ def __render_rspec(url):
 
 
 @click.group(invoke_without_command=True)
-@click.option('--diskimage', default='image.tgz',
+@click.option('--diskimage', '-d', default='image.tgz',
               help='Filename for diskimage')
-@click.option('--release', default='artful', help='Ubuntu release codename')
+@click.option('--release', '-r', default='artful', help='Ubuntu release codename')
+@click.option('--kernel', '-k', multiple=True, default='4.14.5',
+              help='Version number of mainline kernel to bake into image')
 @click.pass_context
-def cli(ctx, diskimage, release):
+def cli(ctx, diskimage, release, kernel):
     if ctx.invoked_subcommand is None:
-        __build(diskimage, release)
+        __build(diskimage, release, kernel)
         url = __upload(diskimage)
         __render_rspec(url)
     else:
         ctx.obj['diskimage'] = diskimage
         ctx.obj['release'] = release
+        ctx.obj['kernel'] = kernel
 
 
 @cli.command()
 @click.pass_context
 def build(ctx):
-    __build(ctx.obj['diskimage'], ctx.obj['release'])
+    __build(ctx.obj['diskimage'], ctx.obj['release'], ctx.obj['kernel'])
 
 
 @cli.command()

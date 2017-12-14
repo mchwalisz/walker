@@ -106,5 +106,4 @@ if __name__ == '__main__':
             except Exception:
                 raise
             finally:
-                pass
                 os.unlink(deb_filename)
