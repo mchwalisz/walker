@@ -24,6 +24,7 @@
      - iperf3
      - netperf
      - dtach
+     - htop
     become: yes
 
   - name: Set regulatory domain to DE
