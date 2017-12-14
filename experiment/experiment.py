@@ -68,8 +68,13 @@ def scan():
     default='udp',
     help='Choose traffic type')
 def short(duration, access_point, client, traffic):
-    ap = Connection(access_point)
-    sta = Connection(client)
+    gateway = Connection(
+        'api.twist.tu-berlin.de',
+        user='proxyuser',
+        port=2222,
+    )
+    ap = Connection(access_point, gateway=gateway)
+    sta = Connection(client, gateway=gateway)
     phy = '02:00'
     channel = 11
 
@@ -91,7 +96,7 @@ def short(duration, access_point, client, traffic):
     result = measurement.iperf_client(sta,
         duration=duration,
         traffic=traffic,
-        title=f'ap:{ap.host},sta:{sta.host},phy:{phy},channel:{channel}')
+        title=f'ap:{ap.host},sta:{sta.host},channel:{channel}')
 
     result_path = data_folder.joinpath(
         f'{time.strftime("%Y-%m-%d-%H%M%S")}-{ap.host}-{sta.host}.json')
