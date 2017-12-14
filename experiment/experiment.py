@@ -28,7 +28,7 @@ def select_one(param):
     context_settings=dict(help_option_names=['-h', '--help']))
 @click.option('-v', '--verbose', count=True,
     help='Increase log verbosity level (up to 4)')
-@click.version_option('v0.1.0')
+@click.version_option('v0.2.0')
 def cli(verbose):
     level = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
     if verbose < 3:
