@@ -64,10 +64,10 @@ def __render_rspec(url):
     for node_type in node_spec:
         for node_name in node_spec[node_type]['hosts']:
             node = {
-                    'name': node_name,
-                    'type': node_type,
-                    'disk_image': url
-                    }
+                'name': node_name,
+                'type': node_type,
+                'disk_image': url
+            }
             nodes.append(node)
 
     rspec = jinja2.Environment(
@@ -86,7 +86,8 @@ def __render_rspec(url):
 @click.group(invoke_without_command=True)
 @click.option('--diskimage', '-d', default='image.tgz',
               help='Filename for diskimage')
-@click.option('--release', '-r', default='artful', help='Ubuntu release codename')
+@click.option(
+    '--release', '-r', default='artful', help='Ubuntu release codename')
 @click.option('--kernel', '-k', multiple=True, default='4.14.5',
               help='Version number of mainline kernel to bake into image')
 @click.version_option('v0.2.0')
