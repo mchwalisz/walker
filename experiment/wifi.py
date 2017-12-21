@@ -134,10 +134,8 @@ def info(cnx):
         cnx (Connection): fabric connection context
     """
     # cnx.run('lshw -C network')
-    results = cnx.run('lspci -nnk | grep "Wireless" -A2', hide=True)
-    for connection, result in results.items():
-        print(connection.host)
-        print(result.stdout)
+    cnx.run('uname -s -n -r')
+    cnx.run('lspci -nnk | grep "Wireless" -A2')
 
 
 def reload(cnx):

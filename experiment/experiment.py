@@ -120,11 +120,21 @@ def run(duration):
     hosts = list(config['nuc']['hosts'].keys())
     phy = '03:00'
     log.info(f'Node info')
-    grp = SerialGroup(*hosts)
-    grp.run('uname -s -n -r')
-    wifi.info(grp)
+    gateway = Connection(
+        'api.twist.tu-berlin.de',
+        user='proxyuser',
+        port=2222,
+    )
+    grp = []
+    for host in sorted(hosts):
+        cnx = Connection(
+            host,
+            gateway=gateway,
+        )
+        wifi.info(cnx)
+        grp.append(cnx)
     data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
-    data_folder.mkdir()
+    data_folder.mkdir(parents=True)
     log.info(f'Storing measurements in {data_folder}')
     for host in grp:
         wifi.phy_clean(host)
