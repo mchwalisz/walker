@@ -15,6 +15,11 @@ from pprint import pprint
 from tqdm import tqdm
 
 BASE_PATH = Path(__file__).parent / '..'
+gateway = Connection(
+    'api.twist.tu-berlin.de',
+    user='proxyuser',
+    port=2222,
+)
 log = logging.getLogger('exp')
 
 
@@ -23,6 +28,23 @@ def select_one(param):
         cut = param[:]
         sel = cut.pop(i)
         yield sel, cut
+
+
+def get_all_nodes():
+    with (BASE_PATH / 'node_selection' / 'hosts').open('r') as stream:
+        config = yaml.load(stream)
+    hosts = list(config['nuc']['hosts'].keys())
+    log.info(f'Node info')
+    grp = []
+    for host in sorted(hosts):
+        cnx = Connection(
+            host,
+            user='chwalisz',
+            gateway=gateway,
+        )
+        wifi.info(cnx)
+        grp.append(cnx)
+    return grp
 
 
 @click.group(
@@ -69,11 +91,6 @@ def scan():
     default='udp',
     help='Choose traffic type')
 def short(duration, access_point, client, traffic):
-    gateway = Connection(
-        'api.twist.tu-berlin.de',
-        user='proxyuser',
-        port=2222,
-    )
     ap = Connection(access_point, gateway=gateway)
     sta = Connection(client, gateway=gateway)
     phy = '02:00'
@@ -115,24 +132,8 @@ def short(duration, access_point, client, traffic):
     default=60,
     help='Iperf3 measurement duration')
 def run(duration):
-    with (BASE_PATH / 'node_selection' / 'hosts').open('r') as stream:
-        config = yaml.load(stream)
-    hosts = list(config['nuc']['hosts'].keys())
+    grp = get_all_nodes()
     phy = '03:00'
-    log.info(f'Node info')
-    gateway = Connection(
-        'api.twist.tu-berlin.de',
-        user='proxyuser',
-        port=2222,
-    )
-    grp = []
-    for host in sorted(hosts):
-        cnx = Connection(
-            host,
-            gateway=gateway,
-        )
-        wifi.info(cnx)
-        grp.append(cnx)
     data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
     data_folder.mkdir(parents=True)
     log.info(f'Storing measurements in {data_folder}')
@@ -173,15 +174,16 @@ def run(duration):
         measurement.iperf_kill(ap)
 
 
-@cli.command(short_help="Run full experiment with switching kernels")
-@click.option('--duration', '-d',
-    default=60,
-    help='Iperf3 measurement duration')
-def full(duration):
-    nuc = Connection('nuc11')
-    possible_kernels = kernel.kernels(nuc)
-    print(possible_kernels)
-    kernel.switch(nuc, possible_kernels[-2].release)
+@cli.command(short_help="Select kernel")
+def select_kernel():
+    grp = get_all_nodes()
+    possible_kernels = kernel.kernels(grp[0])
+    print('Possible kernels')
+    for ii, kern in enumerate(possible_kernels):
+        print(f'{ii}: {kern}')
+    value = click.prompt('Select kernel', type=int)
+    for node in grp:
+        kernel.switch(node, possible_kernels[value].release)
 
 
 if __name__ == '__main__':

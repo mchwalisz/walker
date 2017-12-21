@@ -36,4 +36,4 @@ def switch(ctx: Connection, release: str):
     ctx.sudo(f'ln -fs boot/vmlinuz-{release} /vmlinuz')
     ctx.sudo(f'ln -fs boot/initrd.img-{release} /initrd.img')
 
-    ctx.sudo('reboot', hide=True)
+    # ctx.sudo('reboot', hide=True)
