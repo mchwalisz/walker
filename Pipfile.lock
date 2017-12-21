@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "b3b8a1061eb4bab9a23e51be798df50d1e47c7d2bf482dd2c04cb35bb7893b5b"
+            "sha256": "4424804d46b480cac6aae3d6c331d031858fa012a56f3921854f53e2a485d19d"
         },
         "host-environment-markers": {
             "implementation_name": "cpython",
@@ -9,9 +9,9 @@
             "os_name": "posix",
             "platform_machine": "x86_64",
             "platform_python_implementation": "CPython",
-            "platform_release": "4.14.7-1-ARCH",
+            "platform_release": "4.15.0-rc4-mainline",
             "platform_system": "Linux",
-            "platform_version": "#1 SMP PREEMPT Sun Dec 17 19:13:39 UTC 2017",
+            "platform_version": "#2 SMP PREEMPT Tue Dec 19 21:14:21 CET 2017",
             "python_full_version": "3.6.3",
             "python_version": "3.6",
             "sys_platform": "linux"
@@ -151,6 +151,7 @@
                 "sha256:75e1de9ba7c155d89bcf67d149b1c741df553c8158536e8d27e63167403159af",
                 "sha256:ab87dd91c0c4073758d07334c1e5f712ce8fe48f007b86f8238773963ee700a6"
             ],
+            "markers": "platform_python_implementation != 'PyPy'",
             "version": "==1.11.2"
         },
         "click": {
@@ -269,7 +270,6 @@
                 "sha256:fcc6d46f08c3c4de7b15ae1c426e15be1b7932bcda9d83ce1a4304e8c1129df3",
                 "sha256:51c158a6c8b899898d1c91c6b51a34110196815cc905f9be0fa5878e19355608"
             ],
-            "markers": "python_version >= '3.3'",
             "version": "==6.2.1"
         },
         "ipython-genutils": {
@@ -533,6 +533,7 @@
                 "sha256:e8c43b5eee76b2083a9badde89fd1bbce6c8942d1045146e100b7b5e014f4f1a",
                 "sha256:e64193f0047ad603b71f202332ab5527c5e52aa7c8b609704fc28c0dc20c4365"
             ],
+            "markers": "os_name != 'nt'",
             "version": "==0.5.2"
         },
         "py": {
