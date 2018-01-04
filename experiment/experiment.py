@@ -76,7 +76,7 @@ def short(duration, access_point, client, traffic):
     ap = Connection(access_point, gateway=gateway)
     sta = Connection(client, gateway=gateway)
     phy = '02:00'
-    channel = 11
+    channel = 6
 
     for host in [ap, sta]:
         wifi.phy_clean(host)
