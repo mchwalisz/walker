@@ -4,6 +4,7 @@ import time
 
 from collections import namedtuple
 from fabric import Connection
+from hashlib import sha256
 from invoke.exceptions import UnexpectedExit
 from io import StringIO
 from jinja2 import Environment
@@ -140,6 +141,16 @@ def info(cnx):
         print(result.stdout)
 
 
+def generate_ip(cnx):
+    """Generates persistent IP address for node
+
+    """
+    hashval = sha256(cnx.host.encode('utf-8')).hexdigest()
+    ip_hash = int(hashval, 16) % 2**8
+    ip = f'10.1.1.{ip_hash}'
+    return ip
+
+
 def reload(cnx):
     """Reload kernel modules for `ath9k`
 
@@ -242,8 +253,7 @@ def connect(
     phy, interface = phy_check(cnx, phy, interface, '_sta')
 
     if ip is None:
-        ip_hash = hash(cnx.host) % 2**8
-        ip = f'10.1.1.{ip_hash}'
+        ip = generate_ip(cnx)
 
     old_wpa = cnx.sudo(f'pkill -f wpa_supplicant.*{phy}', warn=True)
     old_hostapd = cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
