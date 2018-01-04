@@ -32,6 +32,9 @@ def get_iperf(source: Path) -> pd.DataFrame:
     result['cookie'] = raw_data['start']['cookie']
     result['timestamp'] = raw_data['start']['timestamp']['time']
     result['server'] = server
+    result['system_info'] = raw_data['start']['system_info']
+    # result['server_system_info'] = raw_data['start']['system_info']
+    result['kernel'] = raw_data['start']['system_info'].split(' ')[2]
     result['client'] = client
     result['connection'] = ' '.join(conn)
     result['traffic'] = raw_data['start']['test_start']['protocol']
