@@ -205,6 +205,7 @@ def create_ap(
     )
 
     # Clean up interface
+    cnx.sudo('rfkill unblock wifi', warn=True, hide=True)
     cnx.sudo(f'ip link set {interface} down')
     cnx.sudo(f'ip addr flush dev {interface}')
     cnx.sudo(f'iw dev {interface} set type managed')
@@ -250,6 +251,7 @@ def connect(
         time.sleep(2)
 
     # Clean up interface
+    cnx.sudo('rfkill unblock wifi', warn=True, hide=True)
     cnx.sudo(f'ip link set {interface} down')
     cnx.sudo(f'ip addr flush dev {interface}')
     cnx.sudo(f'iw dev {interface} set type managed')
