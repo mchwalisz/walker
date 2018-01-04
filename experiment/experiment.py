@@ -2,6 +2,7 @@
 
 import click
 import measurement
+import kernel
 import time
 import wifi
 import yaml
@@ -14,6 +15,11 @@ from pprint import pprint
 from tqdm import tqdm
 
 BASE_PATH = Path(__file__).parent / '..'
+gateway = Connection(
+    'api.twist.tu-berlin.de',
+    user='proxyuser',
+    port=2222,
+)
 log = logging.getLogger('exp')
 
 
@@ -24,12 +30,33 @@ def select_one(param):
         yield sel, cut
 
 
+def get_all_nodes(user=None):
+    with (BASE_PATH / 'node_selection' / 'hosts').open('r') as stream:
+        config = yaml.load(stream)
+    hosts = list(config['nuc']['hosts'].keys())
+    log.info(f'Node info')
+    grp = []
+    for host in sorted(hosts):
+        cnx = Connection(
+            host,
+            user=user,
+            gateway=gateway,
+        )
+        wifi.info(cnx)
+        grp.append(cnx)
+    return grp
+
+
 @click.group(
-    context_settings=dict(help_option_names=['-h', '--help']))
+    context_settings=dict(help_option_names=['-h', '--help'], obj={}))
+@click.option('--user', '-u',
+    default=None,
+    help='Select user')
 @click.option('-v', '--verbose', count=True,
     help='Increase log verbosity level (up to 4)')
 @click.version_option('v0.2.0')
-def cli(verbose):
+@click.pass_context
+def cli(ctx, user, verbose):
     level = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
     if verbose < 3:
         log.setLevel(level[verbose])
@@ -42,6 +69,8 @@ def cli(verbose):
     logging.basicConfig(
         format='%(asctime)s:%(name)s:%(levelname)s:%(message)s',
         level=level[verbose])
+
+    ctx.obj['user'] = user
 
 
 @cli.command(short_help="Scan for networks")
@@ -67,14 +96,10 @@ def scan():
     type=click.Choice(['udp', 'tcp']),
     default='udp',
     help='Choose traffic type')
-def short(duration, access_point, client, traffic):
-    gateway = Connection(
-        'api.twist.tu-berlin.de',
-        user='proxyuser',
-        port=2222,
-    )
-    ap = Connection(access_point, gateway=gateway)
-    sta = Connection(client, gateway=gateway)
+@click.pass_context
+def short(ctx, duration, access_point, client, traffic):
+    ap = Connection(access_point, user=ctx.obj['user'], gateway=gateway)
+    sta = Connection(client, user=ctx.obj['user'], gateway=gateway)
     phy = '02:00'
     channel = 6
 
@@ -113,17 +138,12 @@ def short(duration, access_point, client, traffic):
 @click.option('--duration', '-d',
     default=60,
     help='Iperf3 measurement duration')
-def run(duration):
-    with (BASE_PATH / 'node_selection' / 'hosts').open('r') as stream:
-        config = yaml.load(stream)
-    hosts = list(config['nuc']['hosts'].keys())
+@click.pass_context
+def run(ctx, duration):
+    grp = get_all_nodes(ctx.obj['user'])
     phy = '03:00'
-    log.info(f'Node info')
-    grp = SerialGroup(*hosts)
-    grp.run('uname -s -n -r')
-    wifi.info(grp)
     data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
-    data_folder.mkdir()
+    data_folder.mkdir(parents=True)
     log.info(f'Storing measurements in {data_folder}')
     for host in grp:
         wifi.phy_clean(host)
@@ -160,6 +180,19 @@ def run(duration):
 
         wifi.phy_clean(ap, phy=phy)
         measurement.iperf_kill(ap)
+
+
+@cli.command(short_help="Select kernel")
+@click.pass_context
+def select_kernel(ctx):
+    grp = get_all_nodes(ctx.obj['user'])
+    possible_kernels = kernel.kernels(grp[0])
+    print('Possible kernels')
+    for ii, kern in enumerate(possible_kernels):
+        print(f'{ii}: {kern}')
+    value = click.prompt('Select kernel', type=int)
+    for node in grp:
+        kernel.switch(node, possible_kernels[value].release)
 
 
 if __name__ == '__main__':
