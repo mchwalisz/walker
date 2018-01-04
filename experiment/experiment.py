@@ -96,12 +96,14 @@ def scan():
     type=click.Choice(['udp', 'tcp']),
     default='udp',
     help='Choose traffic type')
+@click.option('--channel',
+    default=6,
+    help='Wifi channel to use')
 @click.pass_context
-def short(ctx, duration, access_point, client, traffic):
+def short(ctx, duration, access_point, client, traffic, channel):
     ap = Connection(access_point, user=ctx.obj['user'], gateway=gateway)
     sta = Connection(client, user=ctx.obj['user'], gateway=gateway)
     phy = '02:00'
-    channel = 6
 
     for host in [ap, sta]:
         wifi.phy_clean(host)
@@ -138,8 +140,11 @@ def short(ctx, duration, access_point, client, traffic):
 @click.option('--duration', '-d',
     default=60,
     help='Iperf3 measurement duration')
+@click.option('--channel', '-c',
+    default=6,
+    help='Wifi channel to use')
 @click.pass_context
-def run(ctx, duration):
+def run(ctx, duration, channel):
     grp = get_all_nodes(ctx.obj['user'])
     phy = '03:00'
     data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
@@ -154,7 +159,7 @@ def run(ctx, duration):
         pbar_ap.set_description(f'AP {ap.host}')
 
         # Create AP
-        wifi.create_ap(ap, phy=phy, ssid='exp1', channel=11)
+        wifi.create_ap(ap, phy=phy, ssid='exp1', channel=channel)
         measurement.iperf_server(ap)
 
         pbar_sta = tqdm(stations, dynamic_ncols=True)
