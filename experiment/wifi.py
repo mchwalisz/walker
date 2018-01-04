@@ -187,8 +187,9 @@ def create_ap(
     """
     phy, interface = phy_check(cnx, phy, interface, '_ap')
 
-    result = cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
-    if result:
+    old_wpa = cnx.sudo(f'pkill -f wpa_supplicant.*{phy}', warn=True)
+    old_hostapd = cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
+    if old_wpa or old_hostapd:
         time.sleep(2)
 
     tmpl = jinja_env.get_template('hostapd.conf.jn2')
@@ -243,8 +244,9 @@ def connect(
         ip_hash = hash(cnx.host) % 2**8
         ip = f'10.1.1.{ip_hash}'
 
-    result = cnx.sudo(f'pkill -f wpa_supplicant.*{phy}', warn=True)
-    if result:
+    old_wpa = cnx.sudo(f'pkill -f wpa_supplicant.*{phy}', warn=True)
+    old_hostapd = cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
+    if old_wpa or old_hostapd:
         time.sleep(2)
 
     # Clean up interface
