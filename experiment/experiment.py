@@ -30,13 +30,15 @@ def select_one(param):
         yield sel, cut
 
 
-def get_all_nodes(user=None):
+def get_all_nodes(user=None, limit=None):
     with (BASE_PATH / 'node_selection' / 'hosts').open('r') as stream:
         config = yaml.load(stream)
     hosts = list(config['nuc']['hosts'].keys())
     log.info(f'Node info')
     grp = []
-    for host in sorted(hosts):
+    if limit:
+        hosts = [host for host in hosts if host in limit]
+    for host in hosts:
         cnx = Connection(
             host,
             user=user,
@@ -143,9 +145,13 @@ def short(ctx, duration, access_point, client, traffic, channel):
 @click.option('--channel', '-c',
     default=6,
     help='Wifi channel to use')
+@click.option('--limit', '-l',
+    help='Limit target hosts to comma separated list')
 @click.pass_context
-def run(ctx, duration, channel):
-    grp = get_all_nodes(ctx.obj['user'])
+def run(ctx, duration, channel, limit):
+    if limit is not None:
+        limit = limit.split(",")
+    grp = get_all_nodes(ctx.obj['user'], limit)
     phy = '03:00'
     data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
     data_folder.mkdir(parents=True)
