@@ -1,0 +1,12 @@
+{
+	"title":	"AP nuc11 STA nuc6 using phy 03:00",
+	"start":	{
+		"connected":	[],
+		"version":	"iperf 3.0.11",
+		"system_info":	"Linux nuc6 4.14.5-041405-generic #201712101332 SMP Sun Dec 10 13:33:10 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux\n"
+	},
+	"intervals":	[],
+	"end":	{
+	},
+	"error":	"error - unable to connect to server: No route to host"
+}
