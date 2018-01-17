@@ -16,15 +16,23 @@ def get_iperf(source: Path) -> pd.DataFrame:
 
     result = pd.DataFrame(intervals)
 
-    result['client'] = raw_data['title'].split(' ')[3]
-    result['server'] = raw_data['title'].split(' ')[1]
-    result['kernel'] = raw_data['start']['system_info'].split(' ')[2]
+    result['Client'] = raw_data['title'].split(' ')[3]
+    result['Access Point'] = raw_data['title'].split(' ')[1]
+    result['Kernel'] = raw_data['start']['system_info'].split(' ')[2]
 
-    result['timestamp'] = raw_data['start']['timestamp']['time']
-    result['system_info'] = raw_data['start']['system_info']
-    result['protocol'] = raw_data['start']['test_start']['protocol']
+    result['Timestamp'] = raw_data['start']['timestamp']['time']
+    result['System Info'] = raw_data['start']['system_info']
+    result['Protocol'] = raw_data['start']['test_start']['protocol']
+
+    result['Connection'] = ['{0[0]} \& {0[1]}'.format(sorted(elem))
+        for elem in zip(result['Access Point'], result['Client'])]
 
     result['file'] = source.stem
+
+    result.columns = [x.replace('_', ' ') for x in result.columns]
+    result = result.rename(columns={
+        'bits per second': 'Throughput [Mbps]',
+    })
 
     return result
 
@@ -49,9 +57,7 @@ def get_iperf_folder(source: Path, recursive: bool = False) -> pd.DataFrame:
 
 def bitrate(x, pos):
     'The two args are the value and tick position'
-    if x >= 1e6:
-        return '{:1.0f}M'.format(x * 1e-6)
-    return '{:1.0f}K'.format(x * 1e-3)
+    return '{:1.0f}'.format(x * 1e-6)
 
 
 bitrate_formatter = FuncFormatter(bitrate)
