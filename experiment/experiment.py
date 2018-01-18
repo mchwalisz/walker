@@ -14,7 +14,7 @@ from pathlib import Path
 from pprint import pprint
 from tqdm import tqdm
 
-BASE_PATH = Path(__file__).parent / '..'
+BASE_PATH = Path(__file__).parent.parent.resolve()
 gateway = Connection(
     'api.twist.tu-berlin.de',
     user='proxyuser',
@@ -111,7 +111,7 @@ def short(ctx, duration, access_point, client, traffic, channel):
         wifi.phy_clean(host)
         measurement.iperf_kill(host)
 
-    data_folder = Path.cwd() / 'data' / 'short'
+    data_folder = BASE_PATH / 'data' / 'short'
     if not data_folder.exists():
         data_folder.mkdir(parents=True)
 
@@ -153,7 +153,7 @@ def run(ctx, duration, channel, limit):
         limit = limit.split(",")
     grp = get_all_nodes(ctx.obj['user'], limit)
     phy = '03:00'
-    data_folder = Path.cwd() / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
+    data_folder = BASE_PATH / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
     data_folder.mkdir(parents=True)
     log.info(f'Storing measurements in {data_folder}')
     for host in grp:
