@@ -24,7 +24,7 @@ def get_iperf(source: Path) -> pd.DataFrame:
     result['System Info'] = raw_data['start']['system_info']
     result['Protocol'] = raw_data['start']['test_start']['protocol']
 
-    result['Connection'] = ['{0[0]} \& {0[1]}'.format(sorted(elem))
+    result['Connection'] = ['{0[0]}\n{0[1]}'.format(sorted(elem))
         for elem in zip(result['Access Point'], result['Client'])]
 
     result['file'] = source.stem
