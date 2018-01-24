@@ -1,0 +1,139 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+#
+# Author: Kai Geissdoerfer <geissdoerfer@tkn.tu-berlin.de>
+#
+# Bootos module for ansible
+#
+
+#---- Documentation Start ----------------------------------------------------#
+DOCUMENTATION = '''
+---
+version_added: "2.3.1.0"
+module: bootos
+short_description: ansible interface for booting images
+description:
+    - This is part of an action plugin allowing to boot boot experiment/base images from ansible.
+options:
+    kparams:
+        description:
+            - Kexec parameters: kernel image, kernel command line, initrd image, experiment rootfs path. See bootparam(7).
+        required: no
+        default: no
+    reboot:
+        description:
+            - Force reboot to specified image
+        required: no
+        default: True
+    image:
+        description:
+          - Target image to be booted. One of base or experiment
+        required: yes
+        default: no
+    experimentuser:
+        description:
+            - Username for login to experiment image
+        required: no
+        default: ansible_ssh_user
+notes:
+    - This module primarly serves as a wrapper around the kexec command to allow clean exit of ansible
+requirements:
+    - kexec-tools
+    - fabric
+
+author: Kai Geissdoerfer
+'''
+
+EXAMPLES = '''
+- name: Load experiment
+  bootos:
+    image: experiment
+    reboot: yes
+    kparams: "{{ kparams }}"
+  become: yes
+'''
+#---- Imports ---------------------------#
+
+from ansible.module_utils.basic import *
+import os
+import subprocess
+import time
+import resource
+
+
+#---- Module Start ------------------------------------------------------------#
+
+def main():
+
+    module = AnsibleModule(
+        argument_spec=dict(
+            image=dict(required=True, choices=['base', 'experiment']),
+            reboot=dict(default=True, type='bool'),
+            experimentuser=dict(required=False, type='str'),
+            kparams=dict(required=False, type='dict')
+        ),
+    )
+
+    # extract parameters from dictionary
+    experiment_rfs = module.params['kparams']['experiment_rfs']
+    kernel = module.params['kparams']['kernel']
+    commandline = module.params['kparams']['commandline']
+    image = module.params['image']
+    reboot = module.params['reboot']
+    if 'initrd' in module.params['kparams'].keys():
+        initrd = module.params['kparams']['initrd']
+    else:
+        initrd = None
+
+    changed = False
+
+    try:
+        kexec_load(experiment_rfs, kernel, commandline, initrd)
+    except Exception as e:
+        module.fail_json(msg="KEXEC_LOAD: Unexpected error: %s message: %s" %(sys.exc_info()[0],e))
+
+    kexec_exec()
+    module.exit_json(changed=True)
+
+
+def kexec_load(rfs, kernel, cmdline, initrd=None):
+    call_list = ['/sbin/kexec', '-l', '/'.join((rfs, kernel))]
+
+    if initrd:
+        call_list.append('--initrd={:s}/{:s}'.format(rfs, initrd))
+
+    call_list.append('--command-line={:s}'.format(cmdline))
+
+    r = subprocess.call(call_list)
+    if r != 0:
+        raise Exception('kexec returned {:s}'.format(r))
+
+
+def kexec_exec():
+    pid = os.fork()
+    if(pid == 0):
+        os.setsid()
+        pid = os.fork()
+        if(pid == 0):
+            pass
+        else:
+            os._exit(0)
+    else:
+        return()
+
+    maxfd = resource.getrlimit(resource.RLIMIT_NOFILE)[1]
+    if (maxfd == resource.RLIM_INFINITY):
+        maxfd = MAXFD
+
+    for fd in range(0, maxfd):
+        try:
+            os.close(fd)
+        except OSError:
+            pass
+
+    time.sleep(1)
+    FNULL = open(os.devnull, 'w')
+    subprocess.Popen("/sbin/kexec -e", stdout=FNULL, shell=True, stderr=FNULL)
+
+
+main()
