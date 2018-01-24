@@ -1,0 +1,29 @@
+- name: Install python
+  raw: test -e /usr/bin/python || (apt -y update && apt install -y python)
+
+- name: Install packages
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  with_items:
+    - sudo
+    - kexec-tools
+
+- name: Add users
+  user:
+    name: "{{ experiment_user }}"
+    shell: /bin/bash
+    groups: sudo
+    append: yes
+
+- name: Copy authorized_key file from base to experiment OS
+  copy:
+    remote_src: True
+    src: "/root/.ssh/authorized_keys"
+    dest: "/home/{{ experiment_user }}/.ssh/authorized_keys"
+
+- name: Allow sudo without password
+  lineinfile:
+    create: yes
+    dest: "/etc/sudoers"
+    line: "%sudo ALL=(ALL) NOPASSWD: ALL"

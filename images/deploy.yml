@@ -1,0 +1,113 @@
+---
+- name: Start twist-managed
+  hosts: nuc
+  vars:
+    experiment_user: "{{ ansible_user }}"
+  tasks:
+
+  - name: unmount target partition
+    mount:
+      name: "{{ rootfs_dir }}"
+      src:  "{{ rootfs_dev }}"
+      fstype: ext4
+      state: unmounted
+
+  - name: clear target partition
+    shell: "mkfs.ext4 -q -F {{ rootfs_dev }}"
+
+  - name: mount target partition
+    mount:
+      name: "{{ rootfs_dir }}"
+      src:  "{{ rootfs_dev }}"
+      fstype: ext4
+      state: mounted
+
+  - name: copy image
+    copy:
+      src: "{{ image_path }}"
+      dest: "{{ rootfs_dir }}/image.tar.gz"
+
+  - name: unpack rootfs
+    shell: tar xpzf "{{ rootfs_dir }}/image.tar.gz" -C "{{ rootfs_dir }}"
+
+  - name: Copy ssh host keys
+    command: cp /etc/ssh/{{ item }} {{ rootfs_dir }}/etc/ssh/{{ item }}
+    with_items:
+      - ssh_host_dsa_key
+      - ssh_host_dsa_key.pub
+      - ssh_host_ecdsa_key
+      - ssh_host_ecdsa_key.pub
+      - ssh_host_ed25519_key
+      - ssh_host_ed25519_key.pub
+      - ssh_host_rsa_key
+      - ssh_host_rsa_key.pub
+
+  - name: Change hostname
+    lineinfile:
+      dest: "{{ rootfs_dir }}/etc/hostname"
+      regexp: '\W*'
+      line: "{{ inventory_hostname }}"
+      backrefs: yes
+
+  - name: Create protected reboot
+    copy:
+      src: nuc_reboot
+      dest: "{{ rootfs_dir }}/sbin/reboot_protected"
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Add udev rule
+    template:
+      src: 70-network-ifname.rules
+      dest: "{{ rootfs_dir }}/etc/udev/rules.d"
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: Add interface configuration
+    lineinfile:
+      dest: "{{ rootfs_dir }}/etc/network/interfaces"
+      line: "{{ item }}"
+      create: yes
+    with_items:
+      - "auto eth0"
+      - "iface eth0 inet dhcp"
+
+  - name: Ensure /proc and /sys are in place
+    file:
+      path: "{{ rootfs_dir }}{{ item }}"
+      state: directory
+      mode: 0551
+    with_items:
+      - "/proc"
+      - "/sys"
+
+  - name: Add root to fstab
+    lineinfile:
+      dest: "{{ rootfs_dir }}/etc/fstab"
+      line: "/dev/vg_user/lv_root / ext4 defaults 0 1"
+      regexp: '^\S+ /'
+
+  - name: deploy controller keys
+    lineinfile:
+      create: yes
+      dest: "{{ rootfs_dir }}/root/.ssh/authorized_keys"
+      line: "{{ controller_pubkey }}"
+
+  - name: Copy authorized_key file from base to experiment OS
+    copy:
+      remote_src: True
+      src: "{{ ansible_env.HOME }}/.ssh/authorized_keys"
+      dest: "{{ rootfs_dir }}/root/.ssh/authorized_keys"
+
+  - name: Load experiment OS
+    bootos:
+      image: experiment
+      reboot: yes
+      kparams: "{{ kparams }}"
+      experimentuser: root
+
+  - include: postinstall.yml
+    vars:
+      ansible_ssh_user: "root"
