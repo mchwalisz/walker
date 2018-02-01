@@ -15,20 +15,6 @@
       - "--exclude=data"
       - "--exclude=images"
 
-  - name: Install required packages
-    apt: name="{{ item }}" state=present
-    with_items:
-     - wpasupplicant
-     - hostapd
-     - tcpdump
-     - python3-setuptools
-     - python3-pip
-     - iperf3
-     - netperf
-     - dtach
-     - htop
-    become: yes
-
   - name: Set regulatory domain to DE
     command: iw reg set DE
     become: yes
