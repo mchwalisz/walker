@@ -12,7 +12,7 @@ from jinja2 import FileSystemLoader
 from pathlib import Path
 from typing import Optional
 
-template_path = (Path(__file__).parent / '..' / 'templates').resolve()
+template_path = (Path(__file__).parent / 'templates').resolve()
 jinja_env = Environment(loader=FileSystemLoader([template_path]))
 WiFiDev = namedtuple('WiFiDev', 'phy, interface')
 
