@@ -90,7 +90,7 @@ def __render_rspec(url):
     '--release', '-r', default='xenial', help='Ubuntu release codename')
 @click.option('--kernel', '-k', multiple=True, default=['3.18.87', '4.14.5'],
               help='Version number of mainline kernel to bake into image')
-@click.version_option('v0.2.0')
+@click.version_option('v0.3.0')
 @click.pass_context
 def cli(ctx, diskimage, release, kernel):
     if ctx.invoked_subcommand is None:

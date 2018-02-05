@@ -56,7 +56,7 @@ def get_all_nodes(user=None, limit=None):
     help='Select user')
 @click.option('-v', '--verbose', count=True,
     help='Increase log verbosity level (up to 4)')
-@click.version_option('v0.2.0')
+@click.version_option('v0.3.0')
 @click.pass_context
 def cli(ctx, user, verbose):
     level = {0: logging.WARNING, 1: logging.INFO, 2: logging.DEBUG}
