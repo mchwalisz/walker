@@ -18,7 +18,7 @@
 
 - name: Set authorized key for experiment user copying it from current user
   authorized_key:
-    user: experiment_user
+    user: "{{ experiment_user }}"
     state: present
     key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
 

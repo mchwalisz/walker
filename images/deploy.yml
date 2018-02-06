@@ -2,7 +2,7 @@
 - name: Start twist-managed
   hosts: nuc
   vars:
-    experiment_user: "{{ ansible_user }}"
+    experiment_user: "{{ lookup('env','USERNAME') }}"
     image_path: 'image.tgz'
   become: yes
   tasks:
@@ -39,10 +39,11 @@
       - image
 
   - name: Copy ssh host keys
-    file:
+    copy:
       src: "/etc/ssh/{{ item }}"
       dest: "{{ rootfs_dir }}/etc/ssh/{{ item }}"
       remote_src: yes
+      force: yes
     with_items:
       - ssh_host_dsa_key
       - ssh_host_dsa_key.pub
@@ -110,3 +111,5 @@
   - include_tasks: postinstall.yml
     vars:
       ansible_ssh_user: "root"
+    tags:
+      - postinstall
