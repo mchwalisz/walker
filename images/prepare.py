@@ -3,7 +3,6 @@ import os
 import pathlib
 import jinja2
 import yaml
-import sys
 import tempfile
 import invoke
 import click
@@ -17,9 +16,9 @@ def __build(diskimage, release, kernel):
     print(f'Creating "{diskimage}"..')
 
     sources_tmpl = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(
-                str(pathlib.Path(__file__).parents[0]))).get_template(
-                    'sources.list.jn2')
+        loader=jinja2.FileSystemLoader(
+            str(pathlib.Path(__file__).parents[0]))).get_template(
+                'sources.list.jn2')
 
     sources_rendered = sources_tmpl.render({'release': release})
 
@@ -30,19 +29,21 @@ def __build(diskimage, release, kernel):
     print(f'sources.list rendered to {sources_filename}')
 
     cmd = (
-            "sudo -E bash -c '"
-            "disk-image-create ubuntu twist mainline-kernel"
-            f" -t tgz -o {diskimage}'"
-          )
+        "sudo -E bash -c '"
+        "disk-image-create ubuntu twist mainline-kernel"
+        f" -t tgz -o {diskimage}'"
+    )
     try:
-        invoke.run(cmd,
-                   env={
-                        'DIB_KERNEL_VERSIONS': ','.join(kernel),
-                        'DIB_APT_SOURCES': sources_filename,
-                        'DIB_RELEASE': release,
-                        'ELEMENTS_PATH': pathlib.Path(__file__)
-                        .absolute().parents[0] / 'add_elements'
-                       })
+        invoke.run(
+            cmd,
+            env={
+                'DIB_KERNEL_VERSIONS': ','.join(kernel),
+                'DIB_APT_SOURCES': sources_filename,
+                'DIB_RELEASE': release,
+                'ELEMENTS_PATH': pathlib.Path(__file__)
+                .absolute().parents[0] / 'add_elements',
+            }
+        )
     finally:
         os.unlink(sources_filename)
 
@@ -71,8 +72,8 @@ def __render_rspec(url):
             nodes.append(node)
 
     rspec = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(
-                str(BASE_PATH / 'node_selection'))).get_template('rspec.jn2')
+        loader=jinja2.FileSystemLoader(
+            str(BASE_PATH / 'node_selection'))).get_template('rspec.jn2')
 
     output = rspec.render({'nodes': nodes})
 
