@@ -1,29 +1,12 @@
-import time
-import sys
 import logging
 import multiprocessing
-
-from fabric.api import run, env, hide, sudo
-from fabric.context_managers import settings
-import fabric.state
-from fabric.network import disconnect_all
-from fabric.exceptions import CommandTimeout
-
 import socket
-from contextlib import closing
+import time
 
 from ansible.plugins.action import ActionBase
+from contextlib import closing
+from fabric import Connection
 
-
-# silence fabric
-fabric.state.output['status'] = False
-fabric.state.output['aborts'] = False
-
-env.reject_unknown_hosts = False
-env.abort_on_prompts = True
-env.warn_only = True
-env.timeout = 5
-env.command_timeout = 10
 
 logger = logging.getLogger('bootos')
 logger.setLevel(logging.DEBUG)
@@ -54,7 +37,7 @@ def wait_for_host(host, user, timeout, delay=0):
     logger.debug("wait for host {}".format(host_string))
     time.sleep(delay)
     t_start = time.time()
-    while time.time() < (t_start+timeout):
+    while time.time() < (t_start + timeout):
         try:
             res = run_cmd(host, user, '/bin/true')
             if(res == 0):
@@ -64,7 +47,7 @@ def wait_for_host(host, user, timeout, delay=0):
             logger.debug("failed login to {}".format(host_string))
 
         logger.debug('waiting {:.2f}s for {}'.format(
-            t_start+timeout-time.time(), host_string))
+            t_start + timeout - time.time(), host_string))
         time.sleep(5)
     raise Exception
 
@@ -72,24 +55,26 @@ def wait_for_host(host, user, timeout, delay=0):
 class FabricProcess(multiprocessing.Process):
     def __init__(self, user, host, cmd, privileged):
         super(FabricProcess, self).__init__()
-        self.host_string = '{:s}@{:s}'.format(user, host)
-        self.operation = sudo if (user != 'root' and privileged) else run
+        self.ctx = Connection('{:s}@{:s}'.format(user, host))
+        self.operation = self.ctx.sudo if (
+            user != 'root' and privileged) else self.ctx.run
         self.cmd = cmd
         self.return_code = multiprocessing.Value('i', -1)
 
     def run(self):
-        with hide('output', 'running', 'warnings'), settings(
-                host_string=self.host_string):
-            res = self.operation(self.cmd, shell=False)
-            disconnect_all()
-            self.return_code.value = res.return_code
+        res = self.operation(self.cmd, shell=False, hide=True, warn=True)
+        self.ctx.close()
+        self.return_code.value = res.return_code
 
 
 def run_cmd(host, user, cmd, privileged=False):
     logger.debug("run cmd \"{}\" on {}@{}".format(
         cmd, user, host))
 
-    if not check_port(host, env.port):
+    port = 22
+    command_timeout = 10
+
+    if not check_port(host, port):
         raise Exception
 
     logger.debug("ssh port open on {}@{}".format(user, host))
@@ -99,7 +84,7 @@ def run_cmd(host, user, cmd, privileged=False):
     fp.start()
 
     t_start = time.time()
-    while time.time() < (t_start+env.command_timeout):
+    while time.time() < (t_start + command_timeout):
         if(fp.exitcode is not None):
             break
         time.sleep(1)
@@ -108,7 +93,7 @@ def run_cmd(host, user, cmd, privileged=False):
         fp.terminate()
         logger.debug("timeout run cmd \"{}\" on {}@{}".format(
             cmd, user, host))
-        raise fabric.CommandTimeout
+        raise TimeoutError()
 
     logger.debug("passed run cmd \"{}\" on {}@{}. Exit code: {}".format(
         cmd, user, host, fp.return_code.value))
@@ -123,8 +108,8 @@ class ActionModule(ActionBase):
         result = super(ActionModule, self).run(tmp, task_vars)
         args = self._task.args.copy()
 
-        env.key_filename = task_vars['ansible_ssh_private_key_file']
-        logger.debug("using private key from {:s}".format(env.key_filename))
+        # key_filename = task_vars['ansible_ssh_private_key_file']
+        # logger.debug("using private key from {:s}".format(key_filename))
 
         if 'experimentuser' not in args:
             args['experimentuser'] = 'ansible_user'

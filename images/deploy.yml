@@ -104,6 +104,8 @@
       reboot: yes
       kparams: "{{ kparams }}"
       experimentuser: root
+    tags:
+      - bootos
 
   - include_tasks: postinstall.yml
     vars:
