@@ -8,7 +8,7 @@ import invoke
 import click
 import awss3 as cloudstorage
 
-BASE_PATH = pathlib.Path(__file__).absolute().parents[1]
+BASE_PATH = pathlib.Path(__file__).absolute().parents[2]
 
 
 def __build(diskimage, release, kernel):

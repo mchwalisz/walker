@@ -14,7 +14,8 @@ from pathlib import Path
 from pprint import pprint
 from tqdm import tqdm
 
-BASE_PATH = Path(__file__).parent.parent.resolve()
+BASE_PATH = Path(__file__).absolute().parents[1]
+
 gateway = Connection(
     'api.twist.tu-berlin.de',
     user='proxyuser',
