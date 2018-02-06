@@ -89,8 +89,11 @@ def __render_rspec(url):
               help='Filename for diskimage')
 @click.option(
     '--release', '-r', default='xenial', help='Ubuntu release codename')
-@click.option('--kernel', '-k', multiple=True, default=['3.18.87', '4.14.5'],
-              help='Version number of mainline kernel to bake into image')
+@click.option(
+    '--kernel', '-k',
+    multiple=True,
+    default=['3.18.87', '4.14.5', '4.15', '4.11.4'],
+    help='Version number of mainline kernel to bake into image')
 @click.version_option('v0.3.0')
 @click.pass_context
 def cli(ctx, diskimage, release, kernel):
