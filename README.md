@@ -37,7 +37,7 @@ pipenv
 The nodes that are used in the experiment are listed in one [YAML](https://www.yaml.org) file under `node_selection/hosts`. The file is a valid [ansible inventory](http://docs.ansible.com/ansible/latest/intro_inventory.html) hosts file and is used in multiple stages throughout the experiment.
 In the same directory, you'll find a [Jinja2](http://jinja.pocoo.org/docs/2.10/) template for a request [RSpec](http://groups.geni.net/geni/wiki/GENIExperimenter/RSpecs), that will be used to request node reservation later on. There are also two pre-rendered RSpec files `rendered.rspec` and `rendered_small.rspec`, which can be used as-is to reserve the corresponding nodes.
 
-### Disk image preparation
+### OS image preparation
 
 This stage consists of three essential steps:
 
@@ -45,7 +45,7 @@ This stage consists of three essential steps:
 2. Uploading the image
 3. Rendering the RSpec with the corresponding link to the image
 
-The three steps are conveniently wrapped in one script `images/prepare.py`. To display available commands and options use
+The three steps are conveniently wrapped in one script `images/preparation/prepare.py`. To display available commands and options use
 ```bash
 ./prepare.py --help
 ```
@@ -89,7 +89,9 @@ Use the following command to render the RSpec for the experiment, using the URL 
 ./prepare.py render_rspec --url http://myserver/myimage.tgz
 ```
 
-### Node reservation
+### OS image deployment
+
+#### Using SFA testbed
 
 At this point, we can request reservation of the corresponding nodes at the testbed using the previously generated RSpec file. The reservation consists of three consecutive steps:
 
@@ -101,6 +103,17 @@ At this point, we can request reservation of the corresponding nodes at the test
 
 We recommend [omni](https://github.com/GENI-NSF/geni-tools/wiki/Omni) as a python-based CLI alternative to jFed. Follow the official [instructions](https://github.com/GENI-NSF/geni-tools/wiki/Omni) for getting started and usage.
 
+#### Using Ad-hoc setup
+
+We also provide scripts to download and boot the image on an ad-hoc setup of hardware. The mechanism is based on the `kexec` feature of the Linux kernel.
+Please refer to the scripts located in `images/deployment`. The playbook `deploy.yml` downloads the image to the target nodes and handles basic configuration. The key task is execution of the `bootos` module. This is an Ansible action plugin, provided by us. It consists of two parts. The first one `images/deployment/action_plugins/bootos.py` is executed locally on the machine, that is running ansible. The actual module (`images/deployment/library/bootos` is executed remotely on the target host and uses kexec to boot a specified kernel with user-defined parameters.
+
+Assuming all nodes are prepared with a basic OS with kexec support and the experimenter has ssh access, the experimental OS can be downloaded and booted by executing the corresponding playbook:
+
+```bash
+ansible-playbook deployment.yml
+```
+
 ### Software deployment
 
 We use this step to deploy software, which is common to all experiments that we are going to perform. We use [ansible](https://www.ansible.com/) to concisely define the desired state of the nodes (which packets should be installed, regulatory settings, etc.). The corresponding playbook can be found under `deployment/main.yml`. To apply the configuration to each node in the experiment we call ansible:
@@ -108,6 +121,26 @@ We use this step to deploy software, which is common to all experiments that we 
 ```bash
 ansible-playbook main.yml
 ```
+
+### Experiment run
+
+Now that we have an experimental OS with all the required software up and running, we can start the actual experiments. In the `experiment` directory there is a convenient script `experiment.py` that can be used to orchestrate all experiments.
+
+The first step is to activate the kernel, for which we want to measure Wifi throughput, in a two step procedure.
+
+```bash
+experiment.py select_kernel
+```
+
+This will prompt the user to select one of the installed kernels. Note that this just sets a symlink to the specified kernel, but does not yet load it. Therefore the nodes have to be rebooted in order to activate the new kernel. This can be achieved using the testbed API (or using Ansible/Fabric in an Ad-Hoc setting).
+
+When the nodes have rebooted, it is time to start the actual measurements. This consists of configuration, i.e. starting an Access Point on a node and connecting a Station and starting iperf to measure throughput between the pair, saving results to the local filesystem. This procedure is automatically repeated for every constellation when calling:
+
+```bash
+experiment.py run
+```
+
+After the measurements have finished, repeat the whole procedure, starting by selecting another kernel.
 
 ### Data analysis
 
