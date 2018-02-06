@@ -16,11 +16,11 @@
     groups: sudo
     append: yes
 
-- name: Copy authorized_key file from base to experiment OS
-  copy:
-    remote_src: True
-    src: "/root/.ssh/authorized_keys"
-    dest: "/home/{{ experiment_user }}/.ssh/authorized_keys"
+- name: Set authorized key for experiment user copying it from current user
+  authorized_key:
+    user: experiment_user
+    state: present
+    key: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
 
 - name: Allow sudo without password
   lineinfile:

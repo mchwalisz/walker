@@ -3,6 +3,8 @@
   hosts: nuc
   vars:
     experiment_user: "{{ ansible_user }}"
+    image_path: 'image.tgz'
+  become: yes
   tasks:
 
   - name: unmount target partition
@@ -14,6 +16,8 @@
 
   - name: clear target partition
     shell: "mkfs.ext4 -q -F {{ rootfs_dev }}"
+    tags:
+      - image
 
   - name: mount target partition
     mount:
@@ -26,12 +30,19 @@
     copy:
       src: "{{ image_path }}"
       dest: "{{ rootfs_dir }}/image.tar.gz"
+    tags:
+      - image
 
   - name: unpack rootfs
     shell: tar xpzf "{{ rootfs_dir }}/image.tar.gz" -C "{{ rootfs_dir }}"
+    tags:
+      - image
 
   - name: Copy ssh host keys
-    command: cp /etc/ssh/{{ item }} {{ rootfs_dir }}/etc/ssh/{{ item }}
+    file:
+      src: "/etc/ssh/{{ item }}"
+      dest: "{{ rootfs_dir }}/etc/ssh/{{ item }}"
+      remote_src: yes
     with_items:
       - ssh_host_dsa_key
       - ssh_host_dsa_key.pub
@@ -48,14 +59,6 @@
       regexp: '\W*'
       line: "{{ inventory_hostname }}"
       backrefs: yes
-
-  - name: Create protected reboot
-    copy:
-      src: nuc_reboot
-      dest: "{{ rootfs_dir }}/sbin/reboot_protected"
-      owner: root
-      group: root
-      mode: 0755
 
   - name: Add udev rule
     template:
@@ -93,13 +96,7 @@
     lineinfile:
       create: yes
       dest: "{{ rootfs_dir }}/root/.ssh/authorized_keys"
-      line: "{{ controller_pubkey }}"
-
-  - name: Copy authorized_key file from base to experiment OS
-    copy:
-      remote_src: True
-      src: "{{ ansible_env.HOME }}/.ssh/authorized_keys"
-      dest: "{{ rootfs_dir }}/root/.ssh/authorized_keys"
+      line: "{{ lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub') }}"
 
   - name: Load experiment OS
     bootos:
@@ -108,6 +105,6 @@
       kparams: "{{ kparams }}"
       experimentuser: root
 
-  - include: postinstall.yml
+  - include_tasks: postinstall.yml
     vars:
       ansible_ssh_user: "root"
