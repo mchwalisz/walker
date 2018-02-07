@@ -174,7 +174,7 @@ def create_ap(
         cnx: Connection,
         phy: Optional[str] = None,
         interface: Optional[str] = None,
-        ssid='experiment',
+        ssid='tkn_walker',
         channel=1,
         psk=None,
         bssid=None,
@@ -231,7 +231,7 @@ def connect(
         cnx: Connection,
         phy: Optional[str] = None,
         interface: Optional[str] = None,
-        ssid='tsch',
+        ssid='tkn_walker',
         psk=None,
         ip=None):
     """Task to connect a node to an AP.

@@ -117,11 +117,11 @@ def short(ctx, duration, access_point, client, traffic, channel):
         data_folder.mkdir(parents=True)
 
     log.info(f'Create AP on {ap.host}')
-    wifi.create_ap(ap, phy=phy, ssid='exp1', channel=channel)
+    wifi.create_ap(ap, phy=phy, ssid='tkn_walker', channel=channel)
     measurement.iperf_server(ap)
 
     log.info(f'Connect to AP from {sta.host}')
-    wifi.connect(sta, phy=phy, ssid='exp1')
+    wifi.connect(sta, phy=phy, ssid='tkn_walker')
     log.info(f'Measure for {duration} sec')
     result = measurement.iperf_client(sta,
         duration=duration,
@@ -166,7 +166,7 @@ def run(ctx, duration, channel, limit):
         pbar_ap.set_description(f'AP {ap.host}')
 
         # Create AP
-        wifi.create_ap(ap, phy=phy, ssid='exp1', channel=channel)
+        wifi.create_ap(ap, phy=phy, ssid='tkn_walker', channel=channel)
         measurement.iperf_server(ap)
 
         pbar_sta = tqdm(stations, dynamic_ncols=True)
@@ -174,7 +174,7 @@ def run(ctx, duration, channel, limit):
             pbar_sta.set_description(f'STA {sta.host}')
             # Connect and measure
             try:
-                wifi.connect(sta, phy=phy, ssid='exp1')
+                wifi.connect(sta, phy=phy, ssid='tkn_walker')
             except EnvironmentError as e:
                 wifi.phy_clean(sta, phy=phy)
                 log.warning(f'Could not connect {sta.host} to {ap.host}')
