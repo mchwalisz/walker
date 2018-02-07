@@ -5,7 +5,7 @@
 We compare the Wi-Fi performance across recent Linux kernel releases.
 For each experiment run we use 6 nodes loaded with the same kernel version.
 Sequentially, for each possible (ordered) pair of nodes, we perform a following measurement.
-We setup one node as \ac{AP} and one as \ac{STA} and measure UDP throughput between them, with traffic flow from \ac{STA} to \ac{AP}.
+We setup one node as AP and one as STA and measure UDP throughput between them, with traffic flow from STA to AP.
 
 Use WiFi nodes deployed in [TWIST testbed](http://www.twist.tu-berlin.de/) in TKN building.
 Nodes are spread over different distances to eliminate the impact of this parameter and increase the validity of the results.
