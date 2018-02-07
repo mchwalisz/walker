@@ -1,19 +1,16 @@
 # WaLKER - Wifi Linux Kernel ExpeRiment
 
-Perform a full mesh measurements of the interference and throughput between all WiFi nodes deployed in TWIST testbed in TKN building.
+We compare the Wi-Fi performance across recent Linux kernel releases.
+For each experiment run we use 6 nodes loaded with the same kernel version.
+Sequentially, for each possible (ordered) pair of nodes, we perform a following measurement.
+We setup one node as \ac{AP} and one as \ac{STA} and measure UDP throughput between them, with traffic flow from \ac{STA} to \ac{AP}.
 
-It is helpful to know the channel quality between each pair of nodes in a testbed.
-There can, of course, be interference on the channel and this can change over time.
-We have to keep in mind that the measurement of the channel quality is only one of the approaches.
-But even this approach can be helpful to understand happenings on the channel.
-It is a good idea to measure the throughput between a pair of nodes to get an indication of the channel quality.
-
+Use WiFi nodes deployed in [TWIST testbed](http://www.twist.tu-berlin.de/) in TKN building.
+Nodes are spread over different distances to eliminate the impact of this parameter and increase the validity of the results.
 All nodes of the testbed operate in the 2.4 GHz and in the 5 GHz band.
-The goal of the experiment is to measure the channel quality between all pair of nodes by its throughput.
-This measurement should be done twice: once in the 2.4GHz and in the 5GHz band.
 
-Other experimenters can modify this script for their own experiment.
-To enable them to do this a documentation of the script is needed.
+Feel free to clone this repository and modify for own experiments.
+This is a showcase for *DevOps based Toolchain for Wireless Network Experimentation Support* paper.
 
 ## Installation
 
@@ -32,6 +29,9 @@ pipenv
 ```
 
 ## Usage
+
+We assume all commands are executed within `pipenv shell`.
+
 ### Node selection
 
 The nodes that are used in the experiment are listed in one [YAML](https://www.yaml.org) file under `node_selection/hosts`. The file is a valid [ansible inventory](http://docs.ansible.com/ansible/latest/intro_inventory.html) hosts file and is used in multiple stages throughout the experiment.
@@ -49,11 +49,8 @@ The three steps are conveniently wrapped in one script `images/preparation/prepa
 ```bash
 ./prepare.py --help
 ```
-You can build a xenial image with additional linux kernels `v3.18.87` and `v4.14.5`, upload it to an [Amazon S3](https://aws.amazon.com/s3/?nc1=h_ls) bucket and render the corresponding RSpec with
 
-```bash
-./prepare.py
-```
+You can build a xenial image with additional linux kernels `v3.18.87` and `v4.14.5`, upload it to an [Amazon S3](https://aws.amazon.com/s3/?nc1=h_ls) bucket and render the corresponding RSpec using above command.
 
 Note that you will need to setup an AWS bucket and provide your credentials. You will find the resulting RSpec under `node_selection/rendered.rspec`. Use this file to request reservation at the testbed (see TODO).
 
@@ -129,7 +126,7 @@ Now that we have an experimental OS with all the required software up and runnin
 The first step is to activate the kernel, for which we want to measure Wifi throughput, in a two step procedure.
 
 ```bash
-experiment.py select_kernel
+./experiment.py select_kernel
 ```
 
 This will prompt the user to select one of the installed kernels. Note that this just sets a symlink to the specified kernel, but does not yet load it. Therefore the nodes have to be rebooted in order to activate the new kernel. This can be achieved using the testbed API (or using Ansible/Fabric in an Ad-Hoc setting).
@@ -137,7 +134,7 @@ This will prompt the user to select one of the installed kernels. Note that this
 When the nodes have rebooted, it is time to start the actual measurements. This consists of configuration, i.e. starting an Access Point on a node and connecting a Station and starting iperf to measure throughput between the pair, saving results to the local filesystem. This procedure is automatically repeated for every constellation when calling:
 
 ```bash
-experiment.py run
+./experiment.py run
 ```
 
 After the measurements have finished, repeat the whole procedure, starting by selecting another kernel.
@@ -146,8 +143,10 @@ After the measurements have finished, repeat the whole procedure, starting by se
 
 To view results start jupyter notebook:
 
-```
-pipenv run jupyter notebook
+```bash
+jupyter notebook
+# or more directly
+jupyter notebook analysis/Connectivity\ Analysis.ipynb
 ```
 
 and open one of the notebooks in `analysis` folder.
