@@ -9,44 +9,30 @@ from matplotlib.ticker import FuncFormatter
 def get_iperf(source: Path) -> pd.DataFrame:
     with source.open('r') as f:
         raw_data = json.load(f)
-    raw_data_frame = [x['streams'][0] for x in raw_data['intervals']]
-    if not raw_data_frame:
+
+    intervals = [x['streams'][0] for x in raw_data['intervals']]
+    if not intervals:
         raise ValueError('Missing data')
-    df = pd.DataFrame(raw_data_frame)
 
-    try:
-        raw_data_server = [x['streams'][0]
-            for x in raw_data['server_output_json']['intervals']]
-    except KeyError:
-        raise ValueError('Missing data')
-    df_server = pd.DataFrame(raw_data_server)
+    result = pd.DataFrame(intervals)
 
-    df_server.columns = ['server_' + x for x in df_server.columns]
-    result = pd.concat([df, df_server], axis=1)
-    # df_server = df_server.set_index('start')
+    result['Client'] = raw_data['title'].split(' ')[3]
+    result['Access Point'] = raw_data['title'].split(' ')[1]
+    result['Kernel'] = raw_data['start']['system_info'].split(' ')[2]
 
-    server = (raw_data['server_output_json']
-        ['start']['system_info']).split(' ')[1]
-    client = raw_data['start']['system_info'].split(' ')[1]
-    conn = sorted([client, server])
-    result['cookie'] = raw_data['start']['cookie']
-    result['timestamp'] = raw_data['start']['timestamp']['time']
-    result['server'] = server
-    result['client'] = client
-    result['connection'] = ' '.join(conn)
-    result['traffic'] = raw_data['start']['test_start']['protocol']
-    try:
-        result['title'] = raw_data['title']
-        key_values = raw_data['title'].split(',')
-        if len(key_values) > 2:
-            for kv in key_values:
-                kv = kv.split(':')
-                result[kv[0]] = kv[1]
-    except KeyError:
-        pass
-    result['mode'] = 'Access Point' if conn[0] == server else 'Client'
+    result['Timestamp'] = raw_data['start']['timestamp']['time']
+    result['System Info'] = raw_data['start']['system_info']
+    result['Protocol'] = raw_data['start']['test_start']['protocol']
+
+    result['Connection'] = ['{0[0]}\n{0[1]}'.format(sorted(elem))
+        for elem in zip(result['Access Point'], result['Client'])]
+
     result['file'] = source.stem
+
     result.columns = [x.replace('_', ' ') for x in result.columns]
+    result = result.rename(columns={
+        'bits per second': 'Throughput [Mbps]',
+    })
 
     return result
 
@@ -71,9 +57,7 @@ def get_iperf_folder(source: Path, recursive: bool = False) -> pd.DataFrame:
 
 def bitrate(x, pos):
     'The two args are the value and tick position'
-    if x >= 1e6:
-        return '{:1.0f}M'.format(x * 1e-6)
-    return '{:1.0f}K'.format(x * 1e-3)
+    return '{:1.0f}'.format(x * 1e-6)
 
 
 bitrate_formatter = FuncFormatter(bitrate)

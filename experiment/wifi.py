@@ -4,6 +4,7 @@ import time
 
 from collections import namedtuple
 from fabric import Connection
+from hashlib import sha256
 from invoke.exceptions import UnexpectedExit
 from io import StringIO
 from jinja2 import Environment
@@ -11,7 +12,7 @@ from jinja2 import FileSystemLoader
 from pathlib import Path
 from typing import Optional
 
-template_path = (Path(__file__).parent / '..' / 'templates').resolve()
+template_path = (Path(__file__).parent / 'templates').resolve()
 jinja_env = Environment(loader=FileSystemLoader([template_path]))
 WiFiDev = namedtuple('WiFiDev', 'phy, interface')
 
@@ -134,10 +135,18 @@ def info(cnx):
         cnx (Connection): fabric connection context
     """
     # cnx.run('lshw -C network')
-    results = cnx.run('lspci -nnk | grep "Wireless" -A2', hide=True)
-    for connection, result in results.items():
-        print(connection.host)
-        print(result.stdout)
+    cnx.run('uname -s -n -r')
+    cnx.run('lspci -nnk | grep "Wireless" -A2')
+
+
+def generate_ip(cnx):
+    """Generates persistent IP address for node
+
+    """
+    hashval = sha256(cnx.host.encode('utf-8')).hexdigest()
+    ip_hash = int(hashval, 16) % 2**8
+    ip = f'10.1.1.{ip_hash}'
+    return ip
 
 
 def reload(cnx):
@@ -187,8 +196,9 @@ def create_ap(
     """
     phy, interface = phy_check(cnx, phy, interface, '_ap')
 
-    result = cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
-    if result:
+    old_wpa = cnx.sudo(f'pkill -f wpa_supplicant.*{phy}', warn=True)
+    old_hostapd = cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
+    if old_wpa or old_hostapd:
         time.sleep(2)
 
     tmpl = jinja_env.get_template('hostapd.conf.jn2')
@@ -204,6 +214,7 @@ def create_ap(
     )
 
     # Clean up interface
+    cnx.sudo('rfkill unblock wifi', warn=True, hide=True)
     cnx.sudo(f'ip link set {interface} down')
     cnx.sudo(f'ip addr flush dev {interface}')
     cnx.sudo(f'iw dev {interface} set type managed')
@@ -240,14 +251,15 @@ def connect(
     phy, interface = phy_check(cnx, phy, interface, '_sta')
 
     if ip is None:
-        ip_hash = hash(cnx.host) % 2**8
-        ip = f'10.1.1.{ip_hash}'
+        ip = generate_ip(cnx)
 
-    result = cnx.sudo(f'pkill -f wpa_supplicant.*{phy}', warn=True)
-    if result:
+    old_wpa = cnx.sudo(f'pkill -f wpa_supplicant.*{phy}', warn=True)
+    old_hostapd = cnx.sudo(f'pkill -f hostapd.*{phy}', warn=True)
+    if old_wpa or old_hostapd:
         time.sleep(2)
 
     # Clean up interface
+    cnx.sudo('rfkill unblock wifi', warn=True, hide=True)
     cnx.sudo(f'ip link set {interface} down')
     cnx.sudo(f'ip addr flush dev {interface}')
     cnx.sudo(f'iw dev {interface} set type managed')

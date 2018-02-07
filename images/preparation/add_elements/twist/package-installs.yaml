@@ -1,0 +1,10 @@
+dtach:
+hostapd:
+htop:
+iperf3:
+netperf:
+python3-pip:
+python3-setuptools:
+python3:
+tcpdump:
+wpasupplicant:

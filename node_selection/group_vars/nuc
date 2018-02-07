@@ -1,0 +1,7 @@
+rootfs_dir: /media/lv_default
+rootfs_dev: /dev/vg_images/default
+kparams:
+    experiment_rfs: '{{ rootfs_dir }}'
+    kernel: 'vmlinuz'
+    initrd: 'initrd.img'
+    commandline: 'root={{ rootfs_dev }} ro crashkernel=384M-:128M net.ifnames=0 biosdevname=0 cloud-init=disabled'

@@ -19,6 +19,8 @@ invoke = "*"
 tqdm = "*"
 seaborn = "*"
 matplotlib = "*"
+bokeh = "*"
+networkx = "*"
 
 
 [dev-packages]

@@ -8,25 +8,12 @@
       dest: ~/exp-code
       delete: yes
       recursive: yes
+      use_ssh_args: yes
       rsync_opts:
       - "--no-motd"
       - "--exclude=.git"
       - "--exclude=data"
       - "--exclude=images"
-
-  - name: Install required packages
-    apt: name="{{ item }}" state=present
-    with_items:
-     - wpasupplicant
-     - hostapd
-     - tcpdump
-     - python3-setuptools
-     - python3-pip
-     - iperf3
-     - netperf
-     - dtach
-     - htop
-    become: yes
 
   - name: Set regulatory domain to DE
     command: iw reg set DE
@@ -37,10 +24,18 @@
     become: yes
     failed_when: false
 
+  - name: List kernels
+    raw: ls /boot/vmlinuz*
+    changed_when: false
+    register: kernels
+
   - name: Check wireless devices
     raw: iw phy | grep Wiphy
     changed_when: false
     register: wdevs
+
+  - name: Show kernels
+    debug: var=kernels.stdout_lines
 
   - name: Show wireless devices
     debug: var=wdevs.stdout_lines
