@@ -4,7 +4,7 @@
   <node client_id="nuc4" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+nuc+nuc4">
     <sliver_type name="raw-pc">
 
-        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v0.3.0/image.tgz"/>
+        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v1.0.0/image.tgz"/>
 
     </sliver_type>
   </node>
@@ -12,7 +12,7 @@
   <node client_id="nuc10" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+nuc+nuc10">
     <sliver_type name="raw-pc">
 
-        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v0.3.0/image.tgz"/>
+        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v1.0.0/image.tgz"/>
 
     </sliver_type>
   </node>
@@ -20,7 +20,7 @@
   <node client_id="nuc12" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+nuc+nuc12">
     <sliver_type name="raw-pc">
 
-        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v0.3.0/image.tgz"/>
+        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v1.0.0/image.tgz"/>
 
     </sliver_type>
   </node>
@@ -28,7 +28,7 @@
   <node client_id="nuc6" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+nuc+nuc6">
     <sliver_type name="raw-pc">
 
-        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v0.3.0/image.tgz"/>
+        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v1.0.0/image.tgz"/>
 
     </sliver_type>
   </node>
@@ -36,7 +36,7 @@
   <node client_id="nuc11" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+nuc+nuc11">
     <sliver_type name="raw-pc">
 
-        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v0.3.0/image.tgz"/>
+        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v1.0.0/image.tgz"/>
 
     </sliver_type>
   </node>
@@ -44,7 +44,7 @@
   <node client_id="nuc13" exclusive="true" component_manager_id="urn:publicid:IDN+twist.tu-berlin.de+authority+am" component_id="urn:publicid:IDN+twist.tu-berlin.de+nuc+nuc13">
     <sliver_type name="raw-pc">
 
-        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v0.3.0/image.tgz"/>
+        <disk_image name="https://github.com/mchwalisz/walker/releases/download/v1.0.0/image.tgz"/>
 
     </sliver_type>
   </node>
