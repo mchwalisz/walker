@@ -1,9 +1,9 @@
 ---
-- name: Start twist-managed
+- name: Start experiment image
   hosts: nuc
   vars:
     experiment_user: "{{ lookup('env','USERNAME') }}"
-    image_path: 'image.tgz'
+    image_path: '../preparation/image.tgz'
   become: yes
   tasks:
 
