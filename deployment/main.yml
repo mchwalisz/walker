@@ -34,6 +34,9 @@
     changed_when: false
     register: wdevs
 
+  - name: Show current kernel
+    debug: var=ansible.kernel
+
   - name: Show kernels
     debug: var=kernels.stdout_lines
 
