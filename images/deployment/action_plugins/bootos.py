@@ -23,8 +23,7 @@ def check_port(host, port):
 
 
 def get_status(host, user):
-    host_string = '{:s}@{:s}'.format(user, host)
-    logger.debug('get status for {}'.format(host_string))
+    logger.debug('get status for {}'.format(host))
     res = run_cmd(host, user, 'grep -Fxq "True" /etc/baseosflag')
     if(res == 0):
         return 'base'
@@ -55,7 +54,7 @@ def wait_for_host(host, user, timeout, delay=0):
 class FabricProcess(multiprocessing.Process):
     def __init__(self, user, host, cmd, privileged):
         super(FabricProcess, self).__init__()
-        self.ctx = Connection('{:s}@{:s}'.format(user, host))
+        self.ctx = Connection(host, user=user)
         self.operation = self.ctx.sudo if (
             user != 'root' and privileged) else self.ctx.run
         self.cmd = cmd
@@ -114,22 +113,27 @@ class ActionModule(ActionBase):
         if 'experimentuser' not in args:
             args['experimentuser'] = 'ansible_user'
 
+        try:
+            user = task_vars['ansible_user']
+        except KeyError:
+            user = None
+
         if not args['reboot']:
             status = get_status(
-                task_vars['ansible_host'], task_vars['ansible_user'])
+                task_vars['ansible_host'], user)
             if(status == args['image']):
                 result['changed'] = False
                 return result
 
         if args['image'] == 'base':
             self.boot_base(
-                task_vars['ansible_host'], task_vars['ansible_user'])
+                task_vars['ansible_host'], user)
             result['changed'] = True
 
         elif args['image'] == 'experiment':
             res = self.boot_experiment(
                 task_vars['ansible_host'],
-                task_vars['ansible_user'],
+                user,
                 args['experimentuser'],
                 args,
                 task_vars)
