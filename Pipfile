@@ -1,13 +1,9 @@
 [[source]]
-
 url = "https://pypi.python.org/simple"
 verify_ssl = true
 name = "pypi"
 
-
 [packages]
-
-"fabric-2.0.0" = {git = "http://github.com/fabric/fabric.git@v2"}
 click = "*"
 "jinja2" = "*"
 jupyter = "*"
@@ -21,14 +17,11 @@ seaborn = "*"
 matplotlib = "*"
 bokeh = "*"
 networkx = "*"
-
+fabric = "*"
 
 [dev-packages]
-
 bpython = "*"
 bumpversion = "*"
 
-
 [requires]
-
 python_version = "3.6"
