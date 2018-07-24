@@ -208,11 +208,10 @@
         },
         "fabric": {
             "hashes": [
-                "sha256:44d883ae41c7b113d424c90e57496f9be3256ef6da43945adde65034ceec322a",
-                "sha256:d2851e883962eba41d34fdead85448264958aa0e7c2cb4fa3d5f2f77cce9c937"
+                "sha256:fcaa8c46cc6c0dabad88ae424ddff86ea9bd1bc6eab6752a0222068228d8d617",
+                "sha256:f4b7518552aeb934b2b170aaa854403dc05118dcaaf9ae30ae62fad6e989206c"
             ],
-            "index": "pypi",
-            "version": "==2.0.0"
+            "version": "==2.2.1"
         },
         "flake8": {
             "hashes": [
