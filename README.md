@@ -1,6 +1,6 @@
 # WaLKER - Wifi Linux Kernel ExpeRiment
 
-[![Say Thanks](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/mchwalisz)
+[![Say Thanks](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/mchwalisz) [![pyup](https://pyup.io/repos/github/mchwalisz/walker/shield.svg)](https://pyup.io/account/repos/github/mchwalisz/walker/)
 
 We compare the Wi-Fi performance across recent Linux kernel releases.
 For each experiment run we use 6 nodes loaded with the same kernel version.
