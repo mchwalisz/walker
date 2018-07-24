@@ -825,10 +825,10 @@
         },
         "widgetsnbextension": {
             "hashes": [
-                "sha256:40794a6a2f97c09a1e613c1c165f67d58a5995d14b283542da39134710791a36",
-                "sha256:5417789ee6064ff515fd10be24870660af3561c02d3d48b26f6f44285d0f70cc"
+                "sha256:af7412053b646a5372278bf772714543acdd6e0ad87f18171ba6a0c9009e3114",
+                "sha256:c5280a62d293735cdadc7b8884e2affcfb0488420ee09963577f042359726392"
             ],
-            "version": "==3.2.1"
+            "version": "==3.3.0"
         }
     },
     "develop": {
