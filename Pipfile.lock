@@ -185,11 +185,10 @@
         },
         "diskimage-builder": {
             "hashes": [
-                "sha256:5be6d340892b985556c29ce5ecbe1401fb18574d5376081ef8c82cc67be83606",
-                "sha256:b7c5228bd65914cab7d00ea35c159cb920d6f4251cb49d494c2db4560594497a"
+                "sha256:a964de31d0894bec7824d87d18d0eb3bf56f24424b388dd9979982ed1b75db4a",
+                "sha256:42d6d5b69a3b01015a6c8c41036dbd41f53130d6c9d3634364aba6cc0bc97566"
             ],
-            "index": "pypi",
-            "version": "==2.14.1"
+            "version": "==2.16.0"
         },
         "docutils": {
             "hashes": [
