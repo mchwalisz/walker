@@ -247,12 +247,11 @@
         },
         "invoke": {
             "hashes": [
-                "sha256:1db6cf918e5df10efe4d61101b19763abe1510b6b2fe8c553daba25476de8044",
-                "sha256:265eead8c89805a2ac5083200842db6da7636ac63fb4fe0d1121b930770f3e2a",
-                "sha256:3e8e2c2e69493227e210a1d19ccc7c44189240385dda4c9b8eb5d98fa0f68a3e"
+                "sha256:54bdd3fd0245abd1185e05359fd2e4f26be0657cfe7d7bb1bed735e054fa53ab",
+                "sha256:334495ea16e73948894e9535019f87a88a44b73e7977492b12c2d1b5085f8197",
+                "sha256:1c2cf54c9b9af973ad9704d8ba81b225117cab612568cacbfb3fc42958cc20a9"
             ],
-            "index": "pypi",
-            "version": "==1.1.0"
+            "version": "==1.1.1"
         },
         "ipykernel": {
             "hashes": [
