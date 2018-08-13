@@ -729,10 +729,10 @@
         },
         "qtconsole": {
             "hashes": [
-                "sha256:b3d10314cbaad76c3157cf922eb410812cde472e8e7c6bd3d5a92d30145bcde1",
-                "sha256:eff8c2faeda567a0bef5781f419a64e9977988db101652b312b9d74ec0a5109c"
+                "sha256:be614978d46552d19db2d5207206a1a5d7c1a70125c77be4cad623e740bc1628",
+                "sha256:ce568a8867c47d947fbf1f5b68872554aa52338fabddd083a3bc203b3609e530"
             ],
-            "version": "==4.3.1"
+            "version": "==4.4.0"
         },
         "s3transfer": {
             "hashes": [
