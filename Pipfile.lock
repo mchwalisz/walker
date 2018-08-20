@@ -277,10 +277,10 @@
         },
         "ipywidgets": {
             "hashes": [
-                "sha256:931cea376239cc1a3e3d3aafd6d4055802f3dfb56ad3ccd26f79e59f2c712a1a",
-                "sha256:23ad9fdbaca5aa0876a2a4d07f19c71b6253821fb6284018edd8e7fb34a37806"
+                "sha256:100f4ea495e1fa2c1dfeabb68641af2302e65e877003f910be4e29f3aa68a0b2",
+                "sha256:fd24a66d82f2ea49e281da7714a7c656340d3ec24dff376b17590fa59469b817"
             ],
-            "version": "==7.3.1"
+            "version": "==7.4.0"
         },
         "jedi": {
             "hashes": [
