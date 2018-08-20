@@ -18,9 +18,9 @@
     "default": {
         "ansible": {
             "hashes": [
-                "sha256:747e4cca09c10833ffe3a7c53af310d2d387bd4f499ec6e1bde60662606aaff8"
+                "sha256:1027f627e6d8a2d51f3a79abb01447716a78aa646e0c2f9860cfde273256a28c"
             ],
-            "version": "==2.6.2"
+            "version": "==2.6.3"
         },
         "asn1crypto": {
             "hashes": [
