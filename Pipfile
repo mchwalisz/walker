@@ -22,6 +22,3 @@ fabric = "*"
 [dev-packages]
 bpython = "*"
 bumpversion = "*"
-
-[requires]
-python_version = "3.6"

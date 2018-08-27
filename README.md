@@ -16,7 +16,7 @@ This is a showcase for *DevOps based Toolchain for Wireless Network Experimentat
 
 ## Installation
 
-We leverage Python 3.6 tools in the whole experiment.
+We leverage Python 3.6 (or newer) tools in the whole experiment.
 We use [pipenv](https://docs.pipenv.org/index.html) as a packaging tool.
 Please install it first with:
 
