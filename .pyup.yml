@@ -1,5 +1,5 @@
 update: insecure
-schedule: "every week on monday"
+# schedule: "every week on monday"
 label_prs: bot
 requirements:
   - Pipfile
