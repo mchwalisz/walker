@@ -280,10 +280,10 @@
         },
         "ipywidgets": {
             "hashes": [
-                "sha256:100f4ea495e1fa2c1dfeabb68641af2302e65e877003f910be4e29f3aa68a0b2",
-                "sha256:fd24a66d82f2ea49e281da7714a7c656340d3ec24dff376b17590fa59469b817"
+                "sha256:d2bea16c0f08df978f63b58c9e91ac4c4bcc0ba5f90ca9a34c310678597542c3",
+                "sha256:ba46e7228b951191c2288478a6f321c67013c0674aff074c8ad32a9723729e1d"
             ],
-            "version": "==7.4.0"
+            "version": "==7.4.1"
         },
         "jedi": {
             "hashes": [
