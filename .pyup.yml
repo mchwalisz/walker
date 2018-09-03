@@ -1,6 +1,0 @@
-update: False
-# schedule: "every week on monday"
-label_prs: bot
-requirements:
-  - Pipfile
-  - Pipfile.lock
