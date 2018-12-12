@@ -22,3 +22,5 @@ fabric = "*"
 [dev-packages]
 bpython = "*"
 bumpversion = "*"
+pylint = "*"
+rope = "*"
