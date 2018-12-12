@@ -107,3 +107,4 @@ data/
 
 *.tgz
 image.d/
+.vscode/settings.json
