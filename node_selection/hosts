@@ -6,3 +6,7 @@ nuc:
     nuc6:
     nuc11:
     nuc13:
+giga:
+  hosts:
+    giga1:
+    giga2:

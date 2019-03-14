@@ -1,6 +1,6 @@
 ---
 - name: Deploy software
-  hosts: nuc
+  hosts: all
   tasks:
   - name: Sync local code
     synchronize:

@@ -34,19 +34,25 @@ def select_one(param):
 def get_all_nodes(user=None, limit=None):
     with (BASE_PATH / 'node_selection' / 'hosts').open('r') as stream:
         config = yaml.load(stream)
-    hosts = list(config['nuc']['hosts'].keys())
-    log.info(f'Node info')
+    hosts = []
+    for group in config:
+        hosts.extend(config[group]['hosts'].keys())
+    log.info(f'Node info: {hosts}')
     grp = []
     if limit:
         hosts = [host for host in hosts if host in limit]
     for host in hosts:
-        cnx = Connection(
-            host,
-            user=user,
-            gateway=gateway,
-        )
-        wifi.info(cnx)
-        grp.append(cnx)
+        try:
+            cnx = Connection(
+                host,
+                user=user,
+                # gateway=gateway,
+            )
+            wifi.info(cnx)
+            grp.append(cnx)
+        except:
+            continue
+    log.info(f'Node info: {grp}')
     return grp
 
 
@@ -78,11 +84,11 @@ def cli(ctx, user, verbose):
 
 @cli.command(short_help="Scan for networks")
 def scan():
-    hosts = ['nuc4', 'nuc10', 'nuc12']
+    hosts = ['giga1']
     grp = SerialGroup(*hosts)
 
     for sta in grp:
-        pprint(wifi.scan(sta, phy='03:00'))
+        pprint(wifi.scan(sta, phy='02:00'))
 
 
 @cli.command(short_help="Run short test between two nodes")
@@ -153,7 +159,7 @@ def run(ctx, duration, channel, limit):
     if limit is not None:
         limit = limit.split(",")
     grp = get_all_nodes(ctx.obj['user'], limit)
-    phy = '03:00'
+    phy = '02:00'
     data_folder = BASE_PATH / 'data' / time.strftime("%Y-%m-%d-%H%M%S")
     data_folder.mkdir(parents=True)
     log.info(f'Storing measurements in {data_folder}')
@@ -175,7 +181,7 @@ def run(ctx, duration, channel, limit):
             # Connect and measure
             try:
                 wifi.connect(sta, phy=phy, ssid='tkn_walker')
-            except EnvironmentError as e:
+            except EnvironmentError:
                 wifi.phy_clean(sta, phy=phy)
                 log.warning(f'Could not connect {sta.host} to {ap.host}')
                 continue
@@ -195,8 +201,11 @@ def run(ctx, duration, channel, limit):
 
 
 @cli.command(short_help="Select kernel")
+@click.option('--reboot', '-r',
+    is_flag=True,
+    help='Reboot nodes')
 @click.pass_context
-def select_kernel(ctx):
+def select_kernel(ctx, reboot):
     grp = get_all_nodes(ctx.obj['user'])
     possible_kernels = kernel.kernels(grp[0])
     print('Possible kernels')
@@ -205,7 +214,11 @@ def select_kernel(ctx):
     value = click.prompt('Select kernel', type=int)
     for node in grp:
         kernel.switch(node, possible_kernels[value].release)
-
+        if reboot:
+            try:
+                node.sudo("reboot")
+            except:
+                pass
 
 if __name__ == '__main__':
     cli()

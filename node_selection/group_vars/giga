@@ -1,7 +1,7 @@
-lvm_vg: vg_images
-lvm_lv: default
-rootfs_dir: '/media/lv_{{ lvm_lv }}'
-rootfs_dev: '/dev/{{ lvm_vg }}/{{ lvm_lv }}'
+lvm_vg: vg-images
+lvm_lv: walker
+rootfs_dir: /media/lv_walker
+rootfs_dev: /dev/{{lvm_vg}}/walker
 kparams:
     experiment_rfs: '{{ rootfs_dir }}'
     kernel: 'vmlinuz'

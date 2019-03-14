@@ -1,32 +1,37 @@
 ---
 - name: Start experiment image
-  hosts: nuc
+  hosts: all
   vars:
-    experiment_user: "{{ lookup('env','USERNAME') }}"
+    experiment_user: "{{ lookup('env','USER') }}"
     image_path: '../preparation/image.tgz'
   become: yes
   tasks:
+  - name: Create target logical volume
+    lvol:
+      vg: "{{ lvm_vg }}"
+      lv: "{{ lvm_lv }}"
+      size: 30g
 
-  - name: unmount target partition
+  - name: Unmount target partition
     mount:
       name: "{{ rootfs_dir }}"
       src:  "{{ rootfs_dev }}"
       fstype: ext4
       state: unmounted
 
-  - name: clear target partition
+  - name: Clear target partition
     shell: "mkfs.ext4 -q -F {{ rootfs_dev }}"
     tags:
       - image
 
-  - name: mount target partition
+  - name: Mount target partition
     mount:
       name: "{{ rootfs_dir }}"
       src:  "{{ rootfs_dev }}"
       fstype: ext4
       state: mounted
 
-  - name: copy image
+  - name: Copy image
     copy:
       src: "{{ image_path }}"
       dest: "{{ rootfs_dir }}/image.tar.gz"
@@ -35,24 +40,43 @@
 
   - name: unpack rootfs
     shell: tar xpzf "{{ rootfs_dir }}/image.tar.gz" -C "{{ rootfs_dir }}"
+    args:
+      warn: False
+    tags:
+      - image
+
+  - name: Copy image
+    file:
+      path: "{{ rootfs_dir }}/image.tar.gz"
+      state: absent
     tags:
       - image
 
   - name: Copy ssh host keys
     copy:
-      src: "/etc/ssh/{{ item }}"
-      dest: "{{ rootfs_dir }}/etc/ssh/{{ item }}"
+      src: "/etc/ssh/{{ item.path }}"
+      dest: "{{ rootfs_dir }}/etc/ssh/{{ item.path }}"
+      mode: "{{ item.mode }}"
       remote_src: yes
       force: yes
     with_items:
-      - ssh_host_dsa_key
-      - ssh_host_dsa_key.pub
-      - ssh_host_ecdsa_key
-      - ssh_host_ecdsa_key.pub
-      - ssh_host_ed25519_key
-      - ssh_host_ed25519_key.pub
-      - ssh_host_rsa_key
-      - ssh_host_rsa_key.pub
+      - { path: "ssh_host_dsa_key", mode: "0600"}
+      - { path: "ssh_host_dsa_key.pub", mode: "0644"}
+      - { path: "ssh_host_ecdsa_key", mode: "0600"}
+      - { path: "ssh_host_ecdsa_key.pub", mode: "0644"}
+      - { path: "ssh_host_ed25519_key", mode: "0600"}
+      - { path: "ssh_host_ed25519_key.pub", mode: "0644"}
+      - { path: "ssh_host_rsa_key", mode: "0600"}
+      - { path: "ssh_host_rsa_key.pub", mode: "0644"}
+
+  - name: Set ssh to disable UsePAM
+    lineinfile:
+      path: "{{ rootfs_dir }}/etc/ssh/sshd_config"
+      regexp: "{{ item.regex }}"
+      line: "{{ item.line }}"
+    with_items:
+      - { regex: "^UsePAM", line: "UsePAM yes"}
+      - { regex: "^PasswordAuthentication", line: "PasswordAuthentication no"}
 
   - name: Change hostname
     lineinfile:
@@ -90,7 +114,7 @@
   - name: Add root to fstab
     lineinfile:
       dest: "{{ rootfs_dir }}/etc/fstab"
-      line: "/dev/vg_user/lv_root / ext4 defaults 0 1"
+      line: "{{ rootfs_dev }} / ext4 defaults 0 1"
       regexp: '^\S+ /'
 
   - name: deploy controller keys
