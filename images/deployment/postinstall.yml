@@ -3,11 +3,10 @@
 
 - name: Install packages
   apt:
-    name: "{{ item }}"
+    name:
+      - sudo
+      - kexec-tools
     update_cache: yes
-  with_items:
-    - sudo
-    - kexec-tools
 
 - name: Add users
   user:

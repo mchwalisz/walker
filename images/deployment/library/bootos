@@ -7,6 +7,13 @@
 #
 
 #---- Documentation Start ----------------------------------------------------#
+
+ANSIBLE_METADATA = {
+    'metadata_version': '1.1',
+    'status': ['preview'],
+    'supported_by': 'TKN TU-Berlin'
+}
+
 DOCUMENTATION = '''
 ---
 version_added: "2.3.1.0"
@@ -54,7 +61,7 @@ EXAMPLES = '''
 '''
 #---- Imports ---------------------------#
 
-from ansible.module_utils.basic import *
+from ansible.module_utils.basic import AnsibleModule
 import os
 import subprocess
 import time
@@ -65,13 +72,14 @@ import resource
 
 def main():
 
+    module_args = dict(
+        image=dict(required=True, choices=['base', 'experiment']),
+        reboot=dict(default=True, type='bool'),
+        experimentuser=dict(required=False, type='str'),
+        kparams=dict(required=False, type='dict')
+    )
     module = AnsibleModule(
-        argument_spec=dict(
-            image=dict(required=True, choices=['base', 'experiment']),
-            reboot=dict(default=True, type='bool'),
-            experimentuser=dict(required=False, type='str'),
-            kparams=dict(required=False, type='dict')
-        ),
+        argument_spec=module_args,
     )
 
     # extract parameters from dictionary
@@ -90,7 +98,8 @@ def main():
     try:
         kexec_load(experiment_rfs, kernel, commandline, initrd)
     except Exception as e:
-        module.fail_json(msg="KEXEC_LOAD: Unexpected error: %s message: %s" %(sys.exc_info()[0],e))
+        msg = "KEXEC_LOAD: Unexpected error: %s message: %s" % (sys.exc_info()[0],e)
+        module.fail_json(msg=msg)
 
     kexec_exec()
     module.exit_json(changed=True)
@@ -136,4 +145,5 @@ def kexec_exec():
     subprocess.Popen("/sbin/kexec -e", stdout=FNULL, shell=True, stderr=FNULL)
 
 
-main()
+if __name__ == '__main__':
+    main()
