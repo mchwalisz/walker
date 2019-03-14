@@ -1,5 +1,6 @@
 help:
 	@fgrep -h "##" $(MAKEFILE_LIST) | fgrep -v fgrep | sed -e 's/\\$$//' | sed -e 's/##//'
+	./experiment/experiment.py info
 
 image-prepare:          ## Create customized OS image
 	cd images/preparation/ && ./prepare.py --release xenial --diskimage image.tgz --kernel 4.14.5 --kernel 3.18.87 build
@@ -19,7 +20,7 @@ select-kernel:          ## Select kernel
 	cd images/deployment && ansible-playbook deploy.yml --tags bootos
 
 experiment:             ## Execute experiment
-	cd experiment && ./experiment.py run
+	./experiment/experiment.py run
 
 analysis:               ## Data analysis, i.e. start jupyter notebook
 	jupyter notebook analysis/Connectivity\ Analysis.ipynb
@@ -27,4 +28,4 @@ analysis:               ## Data analysis, i.e. start jupyter notebook
 clean:                  ## Clean empty data directories
 	cd data && find . -type d -empty -delete
 
-.PHONY: help image_prepare image_deployment software_deployment experiment_1 experiment_2 analysis
+.PHONY: help image_prepare image_deployment software_deployment experiment experiment_1 experiment_2 analysis
