@@ -24,7 +24,7 @@ experiment:             ## Execute experiment
 analysis:               ## Data analysis, i.e. start jupyter notebook
 	jupyter notebook analysis/Connectivity\ Analysis.ipynb
 
-clean:                 ## Clean empty data directories
+clean:                  ## Clean empty data directories
 	cd data && find . -type d -empty -delete
 
 .PHONY: help image_prepare image_deployment software_deployment experiment_1 experiment_2 analysis
