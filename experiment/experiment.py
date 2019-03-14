@@ -14,6 +14,7 @@ from fabric import Connection
 from pathlib import Path
 from pprint import pprint
 from tqdm import tqdm
+from paramiko.ssh_exception import AuthenticationException
 
 BASE_PATH = Path(__file__).absolute().parents[1]
 
@@ -52,11 +53,13 @@ def get_all_nodes(user=None, limit=None):
             )
             result = cnx.run("findmnt / -o SOURCE", hide=True)
             if "vg" not in result.stdout:
-                raise InterruptedError("Wrong system, boot the experiment OS")
+                raise InterruptedError()
             grp.append(cnx)
-        except IndentationError as e:
-            raise e
-        except:
+        except InterruptedError:
+            log.error(f"{host}: Wrong OS, boot the experiment")
+            continue
+        except AuthenticationException:
+            log.error(f"{host}: Cannot login to ")
             continue
     log.info(f"Node info: {grp}")
     return grp
@@ -231,7 +234,7 @@ def info(ctx):
     grp = get_all_nodes(ctx.obj["user"])
 
     for node in grp:
-        click.echo(click.style(node.host, fg="green"))
+        click.echo(click.style(node.host, fg="green", blink=True))
         wifi.info(node)
 
 
