@@ -57,7 +57,7 @@ def ifaces(cnx):
         if line.startswith("Interface"):
             iface = line.split(" ")[-1]
             result = cnx.run(f"iw dev {iface} info", hide=True)
-            match = re.search("wiphy (\d+)", result.stdout)
+            match = re.search(r"wiphy (\d+)", result.stdout)
             phy = "phy" + match.group(1)
             yield WiFiDev(phy, iface)
 
@@ -95,7 +95,7 @@ def phy_check(cnx, phy=None, interface=None, suffix="_w"):
         raise AttributeError("Either phy or interface must be set")
     try:
         result = cnx.run(f"iw dev {interface} info", hide=True)
-        match = re.search("wiphy (?P<dev>\d+)", result.stdout)
+        match = re.search(r"wiphy (?P<dev>\d+)", result.stdout)
         phy = "phy" + match.group(1)
         # cnx.sudo(f'iw {interface} del')
     except UnexpectedExit as e:
