@@ -38,14 +38,14 @@
     tags:
       - image
 
-  - name: unpack rootfs
+  - name: Unpack rootfs
     shell: tar xpzf "{{ rootfs_dir }}/image.tar.gz" -C "{{ rootfs_dir }}"
     args:
       warn: False
     tags:
       - image
 
-  - name: Copy image
+  - name: Remove source image file
     file:
       path: "{{ rootfs_dir }}/image.tar.gz"
       state: absent
@@ -93,7 +93,7 @@
       group: root
       mode: 0644
 
-  - name: Add interface configuration
+  - name: Add interface configuration (legacy)
     lineinfile:
       dest: "{{ rootfs_dir }}/etc/network/interfaces"
       line: "{{ item }}"
@@ -101,6 +101,14 @@
     with_items:
       - "auto eth0"
       - "iface eth0 inet dhcp"
+
+  - name: Add interface configuration (netplan)
+    template:
+      src: netplan.yaml
+      dest: "{{ rootfs_dir }}/etc/netplan/config.yaml"
+      owner: root
+      group: root
+      mode: 0644
 
   - name: Ensure /proc and /sys are in place
     file:
@@ -117,7 +125,7 @@
       line: "{{ rootfs_dev }} / ext4 defaults 0 1"
       regexp: '^\S+ /'
 
-  - name: deploy controller keys
+  - name: Deploy controller keys
     lineinfile:
       create: yes
       dest: "{{ rootfs_dir }}/root/.ssh/authorized_keys"

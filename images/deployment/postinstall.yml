@@ -14,6 +14,8 @@
     shell: /bin/bash
     groups: sudo
     append: yes
+    password: "$6$j8axoOCYh.ke7b5z$/1m3.bHJsHHaQyAHepXZwblsInFV8eKFzw.IYF3aPAV0vVnY.4pnEZHZYkHtf.2F3hyVEVqYz5BRlMytwwZhx0"
+    password_lock: no
 
 - name: Set authorized key for experiment user copying it from current user
   authorized_key:
