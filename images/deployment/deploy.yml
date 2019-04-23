@@ -10,7 +10,7 @@
     lvol:
       vg: "{{ lvm_vg }}"
       lv: "{{ lvm_lv }}"
-      size: 30g
+      size: 20g
 
   - name: Unmount target partition
     mount:
@@ -30,6 +30,12 @@
       src:  "{{ rootfs_dev }}"
       fstype: ext4
       state: mounted
+
+  - name: Remove target from fstab
+    lineinfile:
+      path: /etc/fstab
+      regexp: '{{ rootfs_dev }}'
+      state: absent
 
   - name: Copy image
     copy:
