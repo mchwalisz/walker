@@ -30,6 +30,8 @@
       src:  "{{ rootfs_dev }}"
       fstype: ext4
       state: mounted
+    tags:
+      - bootos
 
   - name: Remove target from fstab
     lineinfile:
