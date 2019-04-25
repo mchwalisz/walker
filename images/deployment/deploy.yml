@@ -108,6 +108,12 @@
       - "auto eth0"
       - "iface eth0 inet dhcp"
 
+  - name: Ensure netplan dir is in place
+    file:
+      path: "{{ rootfs_dir }}/etc/netplan"
+      state: directory
+      mode: 0771
+
   - name: Add interface configuration (netplan)
     template:
       src: netplan.yaml
