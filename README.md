@@ -1,6 +1,6 @@
 # WaLKER - Wifi Linux Kernel ExpeRiment
 
-[![Say Thanks](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/mchwalisz) [![pyup](https://pyup.io/repos/github/mchwalisz/walker/shield.svg)](https://pyup.io/account/repos/github/mchwalisz/walker/)
+[![Say Thanks](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/mchwalisz)
 
 We compare the Wi-Fi performance across recent Linux kernel releases.
 For each experiment run we use 6 nodes loaded with the same kernel version.
@@ -13,6 +13,21 @@ All nodes of the testbed operate in the 2.4 GHz and in the 5 GHz band.
 
 Feel free to clone this repository and modify for own experiments.
 This is a showcase for *DevOps based Toolchain for Wireless Network Experimentation Support* paper.
+
+If you would like to cite this work please use the following:
+
+```bibtex
+@inproceedings{Chwalisz19walker_devops_inspired,
+Title = {{Walker: {DevOps} Inspired Workflow for Experimentation}},
+Author = {Chwalisz, Mikolaj and Geissdoerfer, Kai and Wolisz, Adam},
+Booktitle = {{Proc. of CNERT 2019: Computer and Networking Experimental Research using Testbeds (INFOCOM 2019 WKSHPS - CNERT 2019)}},
+Pages = {1--6},
+Year = {2019},
+Location = {Paris, France},
+Month = {April},
+Url = {http://www.tkn.tu-berlin.de/fileadmin/fg112/Papers/2019/Chwalisz19walker_devops_inspired.pdf}
+}
+```
 
 ## Installation
 
